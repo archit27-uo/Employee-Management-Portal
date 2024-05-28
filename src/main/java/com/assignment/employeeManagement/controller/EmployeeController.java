@@ -1,5 +1,6 @@
 package com.assignment.employeeManagement.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,39 +22,56 @@ import com.assignment.employeeManagement.service.EmployeeService;
 
 @RestController
 @CrossOrigin
-@RequestMapping("api")
+@RequestMapping("api/employee")
 public class EmployeeController {
 	
 	@Autowired
 	private EmployeeService employeeService;
 	
-	@PostMapping("/employee")
-	public Employee addEmployee(@RequestBody EmployeeDTO employeeDTO) {
-		Employee employee = employeeService.addEmployee(employeeDTO);
-		return employee;
-	}
-	
-	@GetMapping("/employee")
+//	@PostMapping("/employee")
+//	public Employee addEmployee(@RequestBody EmployeeDTO employeeDTO) {
+//		Employee employee = employeeService.addEmployee(employeeDTO);
+//		return employee;
+//	}
+//	
+	@GetMapping("/all")
 	public List<Employee> fetchAllEmployee(){
 		List<Employee> employeeList = employeeService.getAllEmployees();
 		return employeeList;
 	}
 	
-	@GetMapping("/employee/{employeeId}")
-	public Optional<Employee> fetchEmployeeById(@PathVariable Long employeeId) {
-		Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
+	
+	@PutMapping("/skills")
+	public Employee updateSkills(Principal principal, @RequestBody List<String> skills)
+	{
+		Employee employee = employeeService.updateSkills(principal, skills);
 		return employee;
 	}
-
-	@DeleteMapping("/employee/{employeeId}")
-	public ResponseEntity<String> deleteEmployeeById(@PathVariable Long employeeId){
-		try {
-		employeeService.deleteEmployee(employeeId);
-		return ResponseEntity.ok("Successfully Deleted");
-		}catch(Exception e) {
-			return ResponseEntity.badRequest().body("Error");
-		}
+	
+	
+	@GetMapping("/info")
+	public Employee getInfo(Principal principal) {
+		Employee employee = employeeService.getEmployeeInfo(principal);
+		return employee;
 	}
+	
+	
+//	@GetMapping("/employee/{employeeId}")
+//	public Optional<Employee> fetchEmployeeById(@PathVariable Long employeeId) {
+//		Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
+//		return employee;
+//	}
+
+//	@DeleteMapping("/employee/{employeeId}")
+//	public ResponseEntity<String> deleteEmployeeById(@PathVariable Long employeeId){
+//		try {
+//		employeeService.deleteEmployee(employeeId);
+//		return ResponseEntity.ok("Successfully Deleted");
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body("Error");
+//		}
+//	}
+	
 	
 	
 	@PutMapping("/employee/{employeeId}")

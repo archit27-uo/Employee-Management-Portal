@@ -1,28 +1,27 @@
 package com.assignment.employeeManagement.service;
 
-import java.security.Principal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
+import com.assignment.employeeManagement.dto.ProjectDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
+import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
+import com.assignment.employeeManagement.model.RequestStatus;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
+import com.assignment.employeeManagement.repository.RequestRepository;
 import com.assignment.employeeManagement.repository.UserLoginRepo;
 
 @Service
-public class EmployeeServiceIMPL implements EmployeeService {
+public class AdminServiceIMPL implements AdminService{
 
 	
 	@Autowired
@@ -37,9 +36,13 @@ public class EmployeeServiceIMPL implements EmployeeService {
 	@Autowired
 	private ProjectRepository projectRepository;
 	
+	@Autowired
+	private RequestRepository requestRepository;
+	
+	
+	
 	@Override
 	public Employee addEmployee(EmployeeDTO employeeDTO) {
-		
 		int userId = employeeDTO.getUserId();
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
@@ -72,9 +75,87 @@ public class EmployeeServiceIMPL implements EmployeeService {
 		return employee;
 	}
 
+	
+	
+	@Override
+	public Project addProject(ProjectDTO projectDTO)
+	{
+		Long managerId = projectDTO.getManagerId();
+		Manager manager = null;
+		if(managerId!=null) {
+			manager = managerRepository.findById(managerId)
+			.orElseThrow(()->new IllegalArgumentException("Invalid manager Id"));
+		}
+		
+		Project project = new Project(
+				projectDTO.getProjectId(),
+				projectDTO.getProjectName(),
+				manager
+				);
+		
+		return projectRepository.save(project);
+	}
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		List<Employee> employeeList = employeeRepository.findAll();
+		return employeeList;
+	}
+
+	@Override
+	public List<Project> getAllProjects() {
+		List<Project> projectList = projectRepository.findAll();
+		return projectList;
+	}
+
+	@Override
+	public Employee assignProjectToEmployee(Long employeeId, Long projectId) {
+		Employee employee = employeeRepository.findById(employeeId)
+				.orElseThrow(()->new IllegalArgumentException("Invalid Employee ID"));
+		
+		Project project = projectRepository.findById(projectId)
+				.orElseThrow(()-> new IllegalArgumentException("Inavlid Project Id"));
+		
+		
+		employee.setProject(project);
+		return employeeRepository.save(employee);
+	}
+
+	@Override
+	public Employee unassignProjectFromEmployee(Long employeeId) {
+		Employee employee = employeeRepository.findById(employeeId)
+				.orElseThrow(()->new IllegalArgumentException("Invalid Employee ID"));
+		employee.setProject(null);
+	
+		return employeeRepository.save(employee);
+	}
+
+	@Override
+	public Request approveRequest(Long requestId) {
+		Request request = requestRepository.findById(requestId)
+				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
+		request.setStatus(RequestStatus.APPROVED);
+		return requestRepository.save(request);
+		
+	}
+
+	@Override
+	public Request rejectRequest(Long requestId) {
+		Request request = requestRepository.findById(requestId)
+				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
+		request.setStatus(RequestStatus.REJECT);
+		return requestRepository.save(request);
+		
+	}
+
+	@Override
+	public void deleteEmployee(Long employeeId) {
+		employeeRepository.deleteById(employeeId);
+		
+	}
+
 	@Override
 	public Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO) {
-		
 		Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
 
@@ -104,79 +185,6 @@ public class EmployeeServiceIMPL implements EmployeeService {
 
         employeeRepository.save(employee);
         return employee;
-        
-	
-    }
-//		Optional<Employee> employee = employeeRepository.findById(employeeId);
-//        if (!employee.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-//        }
-//        User existingUser = employee.get();
-//        existingUser.se;
-//        existingUser.setUserEmail(employeeDTO.getUserEmail());
-//        existingUser.setUserPassword(employeeDTO.getUserPassword());
-//        existingUser.setUserRole(employeeDTO.getUserRole());
-//        userLoginRepo.save(existingUser);
-//        return ResponseEntity.status(HttpStatus.OK).body("User updated successfully");
-//    } catch (Exception e) {
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update user");
-//    }
-
-
-	@Override
-	public void deleteEmployee(Long employeeId) {
-		employeeRepository.deleteById(employeeId);
-		
 	}
 
-	@Override
-	public Optional<Employee> getEmployeeById(Long employeeId) {
-		Optional<Employee> employee = employeeRepository.findByEmployeeId(employeeId);
-		return employee;
-	}
-
-	@Override
-	public List<Employee> getAllEmployees() {
-		List<Employee> employeeList = employeeRepository.findAll();
-		return employeeList;
-	}
-
-@Override
-public Employee updateSkills(Principal principal, List<String> skills) {
-	String email = principal.getName();
-    User user = userRepository.findByUserEmail(email);
-    if (user == null) {
-        throw new IllegalArgumentException("User not found");
-    }
-
-    Employee employee = employeeRepository.findByUser(user);
-    if (employee == null) {
-        throw new IllegalArgumentException("Employee not found");
-    }
-
-    Set<String> skillSet = new HashSet<>(skills);
-    employee.setSkills(skillSet);
-
-    return employeeRepository.save(employee);
 }
-
-@Override
-public Employee getEmployeeInfo(Principal principal) {
-    String email = principal.getName();
-    User user = userRepository.findByUserEmail(email);
-    if (user == null) {
-        throw new IllegalArgumentException("User not found");
-    }
-
-    Employee employee = employeeRepository.findByUser(user);
-    if (employee == null) {
-        throw new IllegalArgumentException("Employee not found");
-    }
-
-    return employee;
-}
-}
-
-
-
-

@@ -8,12 +8,20 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.User;
 
 @EnableJpaRepositories
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	
 //	List<Employee> findByProjectIdIsNull();
-//	List<Employee> findByManagerIdIsNull();
+	List<Employee> findByManagerIsNull();
 	public Optional<Employee> findByEmployeeId(Long employeeId);
+	
+	List<Employee> findBySkillsIn(List<String> skills);
+	
+	List<Employee> findByProjectIsNull();
+	
+	Employee findByUser(User user);
+	
 }

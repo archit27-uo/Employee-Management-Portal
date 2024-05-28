@@ -53,5 +53,12 @@ public class Manager {
 		return "Manager [managerId=" + managerId + ", user=" + user + "]";
 	}
     
+//    @Column(name="manager_name")
+//    private String managerName;
+
+	
+
+	
+    
     
 }

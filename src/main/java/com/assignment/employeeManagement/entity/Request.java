@@ -25,7 +25,7 @@ public class Request {
 
     @ManyToOne
     @JoinColumn(name = "requester_id")
-    private Employee requester;
+    private Manager requester;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "request_type")
@@ -37,7 +37,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
-	public Request(Long requestId, Employee requester, RequestType requestType, String requestDetails,
+	public Request(Long requestId, Manager requester, RequestType requestType, String requestDetails,
 			RequestStatus status) {
 		super();
 		this.requestId = requestId;
@@ -60,12 +60,12 @@ public class Request {
 		this.requestId = requestId;
 	}
 
-	public Employee getRequester() {
+	public Manager getRequester() {
 		return requester;
 	}
 
-	public void setRequester(Employee requester) {
-		this.requester = requester;
+	public void setRequester(Manager requester2) {
+		this.requester = requester2;
 	}
 
 	public RequestType getRequestType() {

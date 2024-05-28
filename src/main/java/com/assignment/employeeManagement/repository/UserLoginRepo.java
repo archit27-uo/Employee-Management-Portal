@@ -13,4 +13,5 @@ import com.assignment.employeeManagement.entity.User;
 public interface UserLoginRepo extends CrudRepository<User, Integer> {
 	Optional<User> findOneByUserEmailAndUserPassword(String userEmail, String userPassword);
 	User findByUserEmail(String userEmail);
+	
 }

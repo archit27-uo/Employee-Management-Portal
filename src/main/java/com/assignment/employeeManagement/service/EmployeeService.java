@@ -1,5 +1,6 @@
 package com.assignment.employeeManagement.service;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,7 @@ public interface EmployeeService {
     void deleteEmployee(Long employeeId);
     Optional<Employee> getEmployeeById(Long employeeId);
     List<Employee> getAllEmployees();
+    Employee updateSkills(Principal principal, List<String> skills);
+    Employee getEmployeeInfo(Principal pincipal);
+    
 }
