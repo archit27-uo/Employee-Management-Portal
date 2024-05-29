@@ -1,11 +1,11 @@
 package com.assignment.employeeManagement.dto;
 
 public class UserLoginDTO {
-	private String userEmail;
+	private String userName;
 	private String userPassword;
 	public UserLoginDTO(String userEmail, String userPassword) {
 		super();
-		this.userEmail = userEmail;
+		this.userName = userEmail;
 		this.userPassword = userPassword;
 	}
 	public UserLoginDTO() {
@@ -13,10 +13,10 @@ public class UserLoginDTO {
 		// TODO Auto-generated constructor stub
 	}
 	public String getUserEmail() {
-		return userEmail;
+		return userName;
 	}
 	public void setUserEmail(String userEmail) {
-		this.userEmail = userEmail;
+		this.userName = userEmail;
 	}
 	public String getUserPassword() {
 		return userPassword;
@@ -26,7 +26,7 @@ public class UserLoginDTO {
 	}
 	@Override
 	public String toString() {
-		return "UserLoginDTO [userEmail=" + userEmail + ", userPassword=" + userPassword + "]";
+		return "UserLoginDTO [userEmail=" + userName + ", userPassword=" + userPassword + "]";
 	}
 	
 	

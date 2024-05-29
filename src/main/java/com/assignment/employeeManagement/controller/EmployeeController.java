@@ -51,6 +51,7 @@ public class EmployeeController {
 	
 	@GetMapping("/info")
 	public Employee getInfo(Principal principal) {
+		System.out.println("inside controller info");
 		Employee employee = employeeService.getEmployeeInfo(principal);
 		return employee;
 	}

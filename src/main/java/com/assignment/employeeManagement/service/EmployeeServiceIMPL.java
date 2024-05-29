@@ -153,8 +153,9 @@ public Employee updateSkills(Principal principal, List<String> skills) {
     if (employee == null) {
         throw new IllegalArgumentException("Employee not found");
     }
-
+    
     Set<String> skillSet = new HashSet<>(skills);
+    skillSet.addAll(employee.getSkills());
     employee.setSkills(skillSet);
 
     return employeeRepository.save(employee);
@@ -162,6 +163,7 @@ public Employee updateSkills(Principal principal, List<String> skills) {
 
 @Override
 public Employee getEmployeeInfo(Principal principal) {
+	
     String email = principal.getName();
     User user = userRepository.findByUserEmail(email);
     if (user == null) {
