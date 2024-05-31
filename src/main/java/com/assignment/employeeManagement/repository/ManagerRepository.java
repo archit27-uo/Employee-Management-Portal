@@ -15,4 +15,5 @@ import com.assignment.employeeManagement.entity.User;
 public interface ManagerRepository extends JpaRepository<Manager, Long>{
 	Manager findByUser(User user);
 	Manager findByManagerId(Long managerId);
+
 }

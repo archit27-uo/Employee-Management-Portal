@@ -14,6 +14,7 @@ import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
 import com.assignment.employeeManagement.model.RequestStatus;
+import com.assignment.employeeManagement.model.RequestType;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
@@ -134,6 +135,34 @@ public class AdminServiceIMPL implements AdminService{
 	public Request approveRequest(Long requestId) {
 		Request request = requestRepository.findById(requestId)
 				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
+		if(request.getRequestType()==RequestType.EMPLOYEE) {
+			int len = request.getEmployeeIds().size();
+			for(int i=0; i<len; i++) {
+				Employee employee = employeeRepository.findById(request.getEmployeeIds().get(i))
+						.orElseThrow(()-> new IllegalArgumentException("Employee not found"));
+				System.out.println(employee);
+//				Project project = projectRepository.findById(request.getProjectId())
+//						.orElseThrow(()-> new IllegalArgumentException("No Such Project Exist"));
+//				
+//				 if (employee.getProject() != null && employee.getProject().getProjectId().equals(project.getProjectId())) {
+//		                System.out.println("Employee " + employee.getEmployeeId() + " is already assigned to project " + project.getProjectId());
+//		            }
+//				 else{
+				//employee.setProject(this.assignProjectToEmployee(requestId, requestId));
+				employee.setManager(request.getRequester());
+				System.out.println(employee);
+//				 try {
+	                    employeeRepository.save(employee);
+	                    System.out.println("Saved in db");
+	                  this.assignProjectToEmployee(employee.getEmployeeId(), request.getProjectId());
+	                    System.out.println(employee);
+//	                } catch (org.springframework.dao.DataIntegrityViolationException e) {
+//	                    System.err.println("DataIntegrityViolationException: " + e.getMessage());
+//	                    throw new RuntimeException("Could not assign project to employee due to unique constraint violation.");
+//	                }
+		         }
+			
+		}
 		request.setStatus(RequestStatus.APPROVED);
 		return requestRepository.save(request);
 		
@@ -187,4 +216,13 @@ public class AdminServiceIMPL implements AdminService{
         return employee;
 	}
 
+
+
+	@Override
+	public List<Request> getAllRequest() {
+		List<Request> requestList = requestRepository.findAll();
+		return requestList;
+	}
+
+	
 }

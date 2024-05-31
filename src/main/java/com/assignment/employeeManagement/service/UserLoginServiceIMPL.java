@@ -24,7 +24,7 @@ public class UserLoginServiceIMPL implements UserLoginService{
 	public LoginResponse loginEmployee(UserLoginDTO userLoginDTO) {
 		String msg = "";
 	 //System.out.println(employeeLoginDTO.getEmployeeEmail());
-        User user = userLoginRepo.findByUserEmail(userLoginDTO.getUserEmail());
+        User user = userLoginRepo.findByUserEmail(userLoginDTO.getUserName());
       // System.out.println(employee1);
         if (user!= null) {
             String password = userLoginDTO.getUserPassword();
@@ -32,7 +32,7 @@ public class UserLoginServiceIMPL implements UserLoginService{
             
             Boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
             if (isPwdRight) {
-                java.util.Optional<User> userData =  userLoginRepo.findOneByUserEmailAndUserPassword(userLoginDTO.getUserEmail(), encodedPassword);
+                java.util.Optional<User> userData =  userLoginRepo.findOneByUserEmailAndUserPassword(userLoginDTO.getUserName(), encodedPassword);
                 if (userData.isPresent()) {
                     return new LoginResponse("Login Success", "Success",user.getUserRole(), user.getUserId());
                 } else {

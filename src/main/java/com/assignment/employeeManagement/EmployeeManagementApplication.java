@@ -4,7 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
-@SpringBootApplication
+import com.assignment.employeeManagement.config.SecurityConfig;
+
+@SpringBootApplication//(exclude = { SecurityAutoConfiguration.class })
 public class EmployeeManagementApplication {
 
 	public static void main(String[] args) {

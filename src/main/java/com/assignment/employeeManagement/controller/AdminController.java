@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
+import com.assignment.employeeManagement.dto.UserAddDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
+import com.assignment.employeeManagement.entity.User;
 import com.assignment.employeeManagement.service.AdminService;
 import com.assignment.employeeManagement.service.EmployeeService;
+import com.assignment.employeeManagement.service.UserService;
 
 @RestController
 @CrossOrigin
@@ -34,6 +37,9 @@ public class AdminController {
 	
     @Autowired
     private AdminService adminService;
+    
+    @Autowired
+    private UserService userService;
 	
 	@PostMapping("/employee")
 	public Employee addEmployee(@RequestBody EmployeeDTO employeeDTO) {
@@ -108,6 +114,19 @@ public class AdminController {
     public Request rejectRequest(@PathVariable Long requestId) {
     	Request request = adminService.rejectRequest(requestId);
     	return request;
+    }
+    
+
+	@PostMapping("/user")
+	public User saveUser(@RequestBody UserAddDTO userAddDTO) {
+		User id = userService.addUser(userAddDTO);
+		return id;
+	}
+    
+    @GetMapping("/request")
+    public List<Request> getAllRequest(){
+    	List<Request> requestList = adminService.getAllRequest();
+    	return requestList;
     }
     
     

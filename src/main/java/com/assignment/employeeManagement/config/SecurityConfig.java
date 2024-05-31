@@ -35,16 +35,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/manager/**").hasRole("MANAGER")
                 .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN")
                 .requestMatchers("api/employee/info").hasRole("EMPLOYEE")
+                .requestMatchers("/api/login").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> httpBasic
                     .realmName("employeeManagement")
                 )
             .formLogin(form -> form
-                    .loginPage("/login").disable()
+                   .disable()
 //                    .permitAll()
                 )
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf.disable()) // .csrf(AbstractHttpConfigurer::disable)
             .userDetailsService(userDetailsService);
         
         return http.build();

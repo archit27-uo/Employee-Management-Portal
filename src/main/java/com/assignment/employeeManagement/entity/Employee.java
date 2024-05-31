@@ -30,7 +30,7 @@ public class Employee {
 	    @Column(name = "full_name", nullable = false	)
 	    private String fullName;
 
-	    @OneToOne
+	    @ManyToOne
 	    @JoinColumn(name = "project_id", nullable = true)
 	    private Project project;
 

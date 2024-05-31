@@ -13,6 +13,7 @@ public interface AdminService {
 	    Project addProject(ProjectDTO projectDTO);
 	    List<Employee> getAllEmployees();
 	    List<Project> getAllProjects();
+	    List<Request> getAllRequest();
 	    Employee assignProjectToEmployee(Long employeeId, Long projectId);
 	    Employee unassignProjectFromEmployee(Long employeeId);
 	    Request approveRequest(Long requestId);
