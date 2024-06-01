@@ -1,47 +1,67 @@
-package com.assignment.employeeManagement;
+package com.assignment.employeeManagement.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.assertj.core.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.assignment.employeeManagement.controller.AdminController;
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
+import com.assignment.employeeManagement.dto.UserAddDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
+import com.assignment.employeeManagement.entity.User;
 import com.assignment.employeeManagement.service.AdminService;
 import com.assignment.employeeManagement.service.EmployeeService;
+import com.assignment.employeeManagement.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AdminControllerTest {
+
+public class TestAdminController {
+	
+	private MockMvc mockMvc;
 	
 	@Mock
 	private EmployeeService employeeService;
 	
+	@Mock
+    private UserService userService;
+
 	@Mock
 	private AdminService adminService;
 	
 	@InjectMocks
 	private AdminController adminController;
 	
+	private ObjectMapper objectMapper = new ObjectMapper();
+	
 	@BeforeEach
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
+		mockMvc = MockMvcBuilders.standaloneSetup(adminController).build();
 	}
 	
 	 @Test
@@ -156,7 +176,91 @@ public class AdminControllerTest {
 //
 //	        assertEquals(request, result);
 //	    }
-	    
+	    @Test
+	    public void testAddProject() throws Exception {
+	        ProjectDTO projectDTO = new ProjectDTO();
+	        Project project = new Project();
+
+	        when(adminService.addProject(any(ProjectDTO.class))).thenReturn(project);
+
+	        mockMvc.perform(post("/api/admin/project")
+	                .contentType(MediaType.APPLICATION_JSON)
+	                .content(objectMapper.writeValueAsString(projectDTO)))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testGetAllProjects() throws Exception {
+	        List<Project> projects = Arrays.asList(new Project(), new Project());
+
+	        when(adminService.getAllProjects()).thenReturn(projects);
+
+	        mockMvc.perform(get("/api/admin/projects"))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testAssignProject() throws Exception {
+	        Employee employee = new Employee();
+
+	        when(adminService.assignProjectToEmployee(eq(1L), eq(1L))).thenReturn(employee);
+
+	        mockMvc.perform(put("/api/admin/employee/1/assignProject/1"))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testUnassignProject() throws Exception {
+	        Employee employee = new Employee();
+
+	        when(adminService.unassignProjectFromEmployee(eq(1L))).thenReturn(employee);
+
+	        mockMvc.perform(put("/api/admin/employee/1/unassignProject"))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testApproveProject() throws Exception {
+	        Request request = new Request();
+
+	        when(adminService.approveRequest(eq(1L))).thenReturn(request);
+
+	        mockMvc.perform(put("/api/admin/request/1/approve"))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testRejectRequest() throws Exception {
+	        Request request = new Request();
+
+	        when(adminService.rejectRequest(eq(1L))).thenReturn(request);
+
+	        mockMvc.perform(put("/api/admin/request/1/reject"))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testSaveUser() throws Exception {
+	        UserAddDTO userAddDTO = new UserAddDTO();
+	        User user = new User();
+
+	        when(userService.addUser(any(UserAddDTO.class))).thenReturn(user);
+
+	        mockMvc.perform(post("/api/admin/user")
+	                .contentType(MediaType.APPLICATION_JSON)
+	                .content(objectMapper.writeValueAsString(userAddDTO)))
+	                .andExpect(status().isOk());
+	    }
+
+	    @Test
+	    public void testGetAllRequests() throws Exception {
+	        List<Request> requests = Arrays.asList(new Request(), new Request());
+
+	        when(adminService.getAllRequest()).thenReturn(requests);
+
+	        mockMvc.perform(get("/api/admin/request"))
+	                .andExpect(status().isOk());
+	    }
 	    public EmployeeDTO getEmployeeDTO() {
 	    	EmployeeDTO employeeDTO = new EmployeeDTO();
 	    	 employeeDTO.setEmployeeId(1L);

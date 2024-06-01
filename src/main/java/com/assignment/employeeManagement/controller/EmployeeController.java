@@ -4,6 +4,8 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,6 +27,8 @@ import com.assignment.employeeManagement.service.EmployeeService;
 @RequestMapping("api/employee")
 public class EmployeeController {
 	
+	private static final Logger logger = LogManager.getLogger(EmployeeController.class);
+	
 	@Autowired
 	private EmployeeService employeeService;
 	
@@ -36,6 +40,7 @@ public class EmployeeController {
 //	
 	@GetMapping("/all")
 	public List<Employee> fetchAllEmployee(){
+		logger.info("API hit: /api/employee/all method:GET");
 		List<Employee> employeeList = employeeService.getAllEmployees();
 		return employeeList;
 	}
@@ -44,6 +49,7 @@ public class EmployeeController {
 	@PutMapping("/skills")
 	public Employee updateSkills(Principal principal, @RequestBody List<String> skills)
 	{
+		logger.info("API hit: /api/employee/skills method:PUT body: "+skills);
 		Employee employee = employeeService.updateSkills(principal, skills);
 		return employee;
 	}
@@ -51,6 +57,7 @@ public class EmployeeController {
 	
 	@GetMapping("/info")
 	public Employee getInfo(Principal principal) {
+		logger.info("API hit: /api/employee/info method:GET Principal: "+principal);
 		System.out.println("inside controller info");
 		Employee employee = employeeService.getEmployeeInfo(principal);
 		return employee;
@@ -77,6 +84,7 @@ public class EmployeeController {
 	
 	@PutMapping("/employee/{employeeId}")
 	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
+		logger.info("API hit: /api/employee/employee/{employeeID} method:PUT body: "+employeeDTO);
 		Employee employee =  employeeService.updateEmployee(employeeId, employeeDTO);
 		return ResponseEntity.ok(employee);
 		

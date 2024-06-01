@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Employee Dashboard</h2>
+        <ul>
+            <li><a href="#" onclick="showHomePage()">Home</a></li>
+            <li><a href="#" onclick="showAllEmployees()">Employees</a></li>
+        </ul>
+        <a href="#" class="profile" onclick="showProfile()">Profile</a>
+        <a href="#" class="logout">Logout</a>
+    </div>
+    <div class="main-content">
+        <div id="home-page">
+            <h3>Your Project and Manager</h3>
+            <div id="employee-details"></div>
+        </div>
+        <div id="employee-list" class="employee-list" style="display: none;">
+            <!-- Employee cards will be appended here -->
+        </div>
+        <div id="profile-page" style="display: none;">
+            <h3>Your Profile</h3>
+            <div id="profile-details"></div>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <script src="employee-scripts.js" defer></script>
+</body>
+</html>

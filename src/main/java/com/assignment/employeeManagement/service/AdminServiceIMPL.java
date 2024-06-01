@@ -3,9 +3,12 @@ package com.assignment.employeeManagement.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.assignment.employeeManagement.controller.AdminController;
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
 import com.assignment.employeeManagement.entity.Employee;
@@ -24,6 +27,7 @@ import com.assignment.employeeManagement.repository.UserLoginRepo;
 @Service
 public class AdminServiceIMPL implements AdminService{
 
+	private static final Logger logger = LogManager.getLogger(AdminController.class);
 	
 	@Autowired
 	private EmployeeRepository employeeRepository;

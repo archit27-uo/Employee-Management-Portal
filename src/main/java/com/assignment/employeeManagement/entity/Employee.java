@@ -22,7 +22,7 @@ public class Employee {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    @Column(name = "employee_id")
 	    private Long employeeId;
-
+		
 	    @OneToOne
 	    @JoinColumn(name = "user_id",  nullable = false)
 	     private User user;
@@ -53,7 +53,9 @@ public class Employee {
 			this.manager = manager;
 			this.skills = skills;
 		}
-
+		public Employee(Long employeeId) {
+			this.employeeId=employeeId;
+		}
 		public Employee() {
 			super();
 			// TODO Auto-generated constructor stub

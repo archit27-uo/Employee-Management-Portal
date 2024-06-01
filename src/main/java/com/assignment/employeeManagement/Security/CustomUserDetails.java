@@ -14,10 +14,9 @@ public class CustomUserDetails implements UserDetails{
 	
 	private User user;
 	
-	
-	
 	public CustomUserDetails(User user) {
 		super();
+		this.user = user;	
 	}
 
 	@Override
@@ -28,14 +27,13 @@ public class CustomUserDetails implements UserDetails{
 	
 	@Override
 	public String getPassword() {
-		
 		return user.getUserPassword();
 	}
 
 	@Override
 	public String getUsername() {
-		
-		return user.getUserEmail();	}
+		return user.getUserEmail();	
+	}
 
 	@Override
 	public boolean isAccountNonExpired() {

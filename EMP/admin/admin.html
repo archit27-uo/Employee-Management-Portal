@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Dashboard</h2>
+        <ul>
+            <li><a href="#"  onclick="showProjects()">Projects</a></li>
+            <li><a href="#">Employee</a></li>
+            <li><a href="#">Managers</a></li>
+            <li><a href="#" onclick="showRequests()">Requests</a></li>
+        </ul>
+        <a href="#" class="logout">Logout</a>
+    </div>
+    <div class="main-content">
+        <div class="search-bar">
+            <input type="text" placeholder="Search">
+            <button onclick="openAddEmployeeModal()">Add Employee</button>
+        </div>
+        <div class="filter-bar">
+            <button onclick="filterEmployees('all')">All</button>
+            <button onclick="filterEmployees('assigned')">Assigned</button>
+            <button onclick="filterEmployees('unassigned')">Unassigned</button>
+        </div>
+        <div id="project-list" class="project-list" style="display: none;">
+            <!-- Project cards will be appended here -->
+        </div>
+        <div id="employee-list" class="employee-list">
+            <!-- Employee cards will be appended here -->
+        </div>
+        <div id="request-list" class="request-list" style="display: none;">
+            <!-- Request tiles will be appended here -->
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddEmployeeModal()">&times;</span>
+            <h2>Add Employee</h2>
+            <form id="addEmployeeForm" onsubmit="submitEmployeeForm(event)">
+                <!-- <label for="userId">User ID:</label>
+                <input type="number" id="userId" name="userId" required> -->
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" name="fullName" required>
+                <label for="projectId">Project ID:</label>
+                <input type="number" id="projectId" name="projectId">
+                <label for="managerId">Manager ID:</label>
+                <input type="number" id="managerId" name="managerId">
+                <label for="skills">Skills (comma separated):</label>
+                <input type="text" id="skills" name="skills">
+                <button type="submit">Add Employee</button>
+            </form>
+        </div>
+    </div>
+    <script src="scripts.js" defer></script>
+</body>
+</html>

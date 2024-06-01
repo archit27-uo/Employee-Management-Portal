@@ -22,7 +22,7 @@ import com.assignment.employeeManagement.service.UserService;
 @RestController
 @CrossOrigin
 @RequestMapping("api")
-public class UserContoller {
+public class UserController {
 	
 	@Autowired
 	private UserService userService;

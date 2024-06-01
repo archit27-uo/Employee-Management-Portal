@@ -1,6 +1,7 @@
 package com.assignment.employeeManagement.entity;
 
 import com.assignment.employeeManagement.model.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,8 @@ public class User {
 	
 	@Column(name="user_email", unique=true, length=255)
 	private String userEmail;
-	
+
+	@JsonIgnore
 	@Column(name="user_password", length=255)
 	private String userPassword;
 	

@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar {
+    background-color: #126B9C;
+    color: white;
+    height: 100vh;
+    padding: 20px;
+    position: fixed;
+    width: 200px;
+}
+
+.sidebar h2 {
+    text-align: center;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 20px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sidebar .profile, .sidebar .logout {
+    color: white;
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.main-content {
+    margin-left: 300px;
+    padding: 40px;
+}
+
+.employee-list, .manager-list, .project-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.employee-card, .manager-card, .project-card {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    width: calc(33.333% - 40px);
+    box-sizing: border-box;
+}
+
+.details {
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-top: 20px;
+    padding: 10px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.message.error {
+    background-color: #f44336;
+    color: white;
+}
