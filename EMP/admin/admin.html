@@ -1,50 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
+
     <div class="sidebar">
-        <h2>Admin Dashboard</h2>
-        <ul>
-            <li><a href="#"  onclick="showProjects()">Projects</a></li>
-            <li><a href="#">Employee</a></li>
-            <li><a href="#">Managers</a></li>
+
+        <h2>ADMIN DASHBOARD</h2>
+
+        <ul class="list">
+            <li><a href="#" onclick="showProjects()">Projects</a></li>
+            <li><a href="#" onclick="showEmployees()">Employee</a></li>
+            <li><a href="#" onclick="showManagers()">Managers</a></li>
             <li><a href="#" onclick="showRequests()">Requests</a></li>
         </ul>
-        <a href="#" class="logout">Logout</a>
+
+        <div id="line"></div>
+
+        <a href="#" onclick="logout()" class="logout">Logout</a>
+
     </div>
+
+    <!-- ------------------------------------------------------------------- -->
+
     <div class="main-content">
+
         <div class="search-bar">
-            <input type="text" placeholder="Search">
-            <button onclick="openAddEmployeeModal()">Add Employee</button>
+
+            <input class="srch" type="text" placeholder="Search">
+            <button onclick="openAddUserModal()">Add Employee</button>
+
         </div>
+
         <div class="filter-bar">
-            <button onclick="filterEmployees('all')">All</button>
-            <button onclick="filterEmployees('assigned')">Assigned</button>
-            <button onclick="filterEmployees('unassigned')">Unassigned</button>
+            <button onclick="filterEmployees('all')">ALL</button>
+            <button onclick="filterEmployees('assigned')">ASSIGNED</button>
+            <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
         </div>
-        <div id="project-list" class="project-list" style="display: none;">
-            <!-- Project cards will be appended here -->
+
+        <div id="project" class="project" style="display: none;">
+            <button onclick="openAddProjectModal()" >Add Project</button>
+            <div id="project-list" class="project-list">
+
+            </div>
         </div>
+
         <div id="employee-list" class="employee-list">
             <!-- Employee cards will be appended here -->
         </div>
+
+        <div id="manager-list" class="manager-list" style="display: none;">
+            <!-- Request tiles will be appended here -->
+        </div>
+
         <div id="request-list" class="request-list" style="display: none;">
             <!-- Request tiles will be appended here -->
         </div>
+
         <div id="message" class="message"></div>
+
     </div>
+
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddUserModal()">&times;</span>
+            <form id="addUserForm" onsubmit="submitUserForm(event)">
+                <h2>Add User</h2>
+                <label for="userName">User Name:</label>
+                <input type="text" id="userName" name="userName" required>
+                <label for="userEmail">User Email:</label>
+                <input type="email" id="userEmail" name="userEmail" required>
+                <label for="userPassword">User Password:</label>
+                <input type="password" id="userPassword" name="userPassword" required>
+                <label for="userRole">User Role:</label>
+                <select id="userRole" name="userRole" required>
+                    <option value="EMPLOYEE">Employee</option>
+                    <option value="MANAGER">Manager</option>
+                </select>
+                <button type="submit">Add User</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Employee Modal -->
     <div id="addEmployeeModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddEmployeeModal()">&times;</span>
-            <h2>Add Employee</h2>
             <form id="addEmployeeForm" onsubmit="submitEmployeeForm(event)">
-                <!-- <label for="userId">User ID:</label>
-                <input type="number" id="userId" name="userId" required> -->
+                <h2>Add Employee</h2>
+                <input type="hidden" id="employeeUserId" name="userId">
                 <label for="fullName">Full Name:</label>
                 <input type="text" id="fullName" name="fullName" required>
                 <label for="projectId">Project ID:</label>
@@ -57,6 +109,53 @@
             </form>
         </div>
     </div>
+
+    <div id="assignProjectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAssignProjectModal()">&times;</span>
+            <h2>Assign Project</h2>
+            <form id="assignProjectForm" onsubmit="assignProject(event)">
+                <label for="assignProjectId">Project ID:</label>
+                <input type="number" id="assignProjectId" name="assignProjectId" required>
+                <input type="hidden" id="assignEmployeeId" name="assignEmployeeId">
+                <button type="submit">Assign Project</button>
+            </form>
+        </div>
+    </div>
+    <div id="editEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditEmployeeModal()">&times;</span>
+            <h2>Edit Employee</h2>
+            <form id="editEmployeeForm" onsubmit="submitEditEmployeeForm(event)">
+                <input type="hidden" id="editEmployeeId" name="employeeId">
+                <label for="editFullName">Full Name:</label>
+                <input type="text" id="editFullName" name="fullName" required>
+                <label for="editProjectId">Project ID:</label>
+                <input type="number" id="editProjectId" name="projectId">
+                <label for="editManagerId">Manager ID:</label>
+                <input type="number" id="editManagerId" name="managerId">
+                <label for="editSkills">Skills (comma separated):</label>
+                <input type="text" id="editSkills" name="skills">
+                <button type="submit">Update Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addProjectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddProjectModal()">&times;</span>
+            <h3>Add Project</h3>
+            <form id="addProjectForm" onsubmit="submitAddProjectForm(event)">
+                <label for="projectName">Project Name:</label>
+                <input type="text" id="projectName" name="projectName" required>
+                <label for="managerId">Manager ID:</label>
+                <input type="number" id="projectManagerId" name="managerId" required>
+                <button type="submit">Add Project</button>
+            </form>
+        </div>
+    </div>
+
     <script src="scripts.js" defer></script>
 </body>
+
 </html>

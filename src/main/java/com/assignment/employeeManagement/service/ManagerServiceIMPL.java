@@ -7,6 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.assignment.employeeManagement.dto.ManagerDTO;
+import com.assignment.employeeManagement.dto.ManagerInfoDTO;
+import com.assignment.employeeManagement.dto.RequestDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
@@ -70,20 +73,24 @@ public class ManagerServiceIMPL implements ManagerService {
 	}
 
 	@Override
-	public Request requestEmployeesForProject(String email, Long projectId, List<Long> employeeIds) {
-		Manager requester =managerRepository.findByUser(userRepository.findByUserEmail(email));
+	public Request requestEmployeesForProject(RequestDTO requestDTO) {
+		Manager requester = managerRepository.findByManagerId(requestDTO.getRequesterId());
 		Request request = new Request();
 		request.setRequester(requester);
-		request.setRequestType(RequestType.EMPLOYEE);
-		request.setProjectId(projectId);
-		request.setEmployeeIds(employeeIds);
-		request.setRequestDetails("Project ID: "+projectId+", Employee IDs: "+employeeIds);
+		request.setRequestType(requestDTO.getRequestType());
+		request.setProjectId(requestDTO.getProjectId());
+		request.setEmployeeIds(requestDTO.getEmployeeIds());
+		request.setRequestDetails(
+				requestDTO.getRequestDetails()!=null?
+						requestDTO.getRequestDetails():
+						"Project ID: "+requestDTO.getProjectId()+", Employee IDs: "+requestDTO.getEmployeeIds()
+						);
 		request.setStatus(RequestStatus.PENDING);
 		return requestRepository.save(request);
 	}
 
 	@Override
-	public Manager getManagerInfo(Principal principal) {
+	public ManagerInfoDTO getManagerInfo(Principal principal) {
 		String email = principal.getName();
 	    User user = userRepository.findByUserEmail(email);
 	    if (user == null) {
@@ -94,14 +101,20 @@ public class ManagerServiceIMPL implements ManagerService {
 	    if (manager == null) {
 	        throw new IllegalArgumentException("Employee not found");
 	    }
+	    ManagerInfoDTO managerInfoDTO = new ManagerInfoDTO();
+	    managerInfoDTO.setManagerId(manager.getManagerId());
+	    managerInfoDTO.setFullName(manager.getUser().getUserName());
+	    managerInfoDTO.setProjectList(projectRepository.findAllByManager(manager));
+	    managerInfoDTO.setEmployeeList(employeeRepository.findAllByManager(manager));
+	    
 
-	    return manager;
+	    return managerInfoDTO;
 	}
 
 	@Override
 	public List<Employee> getAllEmployeeByProject(Long projectId) {
 		Project project = projectRepository.findById(projectId).orElseThrow(()->new IllegalArgumentException("Project not found"));
-		List<Employee> employeeList = employeeRepository.findByProject(project);
+		List<Employee> employeeList = employeeRepository.findAllByProject(project);
 				
 		return employeeList;
 	}

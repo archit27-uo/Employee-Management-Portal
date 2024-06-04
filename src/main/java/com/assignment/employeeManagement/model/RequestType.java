@@ -1,6 +1,7 @@
 package com.assignment.employeeManagement.model;
 
 public enum RequestType {
-	EMPLOYEE,
-	PROJECT
+	ASSIGN_EMPLOYEE,
+	UNASSIGN_EMPLOYEE,
+	PROJECT_RESOURCE
 }

@@ -178,7 +178,7 @@ public class AdminServiceIMPLTest {
 	    public void testApproveRequest() {
 	        Request request = new Request();
 	        request.setRequestId(1L);
-	        request.setRequestType(RequestType.EMPLOYEE);
+	        request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
 	        request.setEmployeeIds(Arrays.asList(1L, 2L));
 	        request.setProjectId(1L);
 	        request.setRequester(new Manager());

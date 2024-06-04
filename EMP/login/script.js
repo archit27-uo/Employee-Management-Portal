@@ -4,10 +4,10 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     var password = document.getElementById("password").value
 
     var login = {
-        employeeEmail: email,
-        employeePassword: password,
+        userName: email,
+        userPassword: password,
     }
-    fetch("http://localhost:8080/api/employee/login", {
+    fetch("http://localhost:8080/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -17,14 +17,18 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     })
     .then(response => response.json())
     .then(result => {
+      console.log(result);
       document.getElementById("message").textContent = result.message;
       if (result.message === "Login Success") {
-       
-        if(result.role==="employee"){
+        var token = btoa(email + ":" + password);
+        localStorage.setItem("authToken", token);
+        if(result.userRole==="EMPLOYEE"){
             window.location.href = "../employee/employee.html";
         }
-        else if(result.role==="Manager"){
+        else if(result.userRole==="MANAGER"){
           window.location.href = "../manager/manager.html";
+        }else if(result.userRole=="ADMIN"){
+          window.location.href="../admin/admin.html"
         }
       }
     })

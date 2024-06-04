@@ -28,12 +28,12 @@ public class RequestTest {
 	
     @Test
     public void testRequestCreation() {
-        Request request = new Request(1L, requester, RequestType.EMPLOYEE, 201L, employeeIds, "Request for new hires", RequestStatus.PENDING);
+        Request request = new Request(1L, requester, RequestType.ASSIGN_EMPLOYEE, 201L, employeeIds, "Request for new hires", RequestStatus.PENDING);
 
         assertNotNull(request);
         assertEquals(1L, request.getRequestId().longValue());
         assertEquals(requester, request.getRequester());
-        assertEquals(RequestType.EMPLOYEE, request.getRequestType());
+        assertEquals(RequestType.ASSIGN_EMPLOYEE, request.getRequestType());
         assertEquals(201L, request.getProjectId().longValue());
         assertEquals(employeeIds, request.getEmployeeIds());
         assertEquals("Request for new hires", request.getRequestDetails());
@@ -49,7 +49,7 @@ public class RequestTest {
         Request request = new Request();
         request.setRequestId(2L);
         request.setRequester(requester);
-        request.setRequestType(RequestType.EMPLOYEE);
+        request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
         request.setProjectId(2L);
         request.setEmployeeIds(employeeIds);
         request.setRequestDetails("Training request");
@@ -57,7 +57,7 @@ public class RequestTest {
 
         assertEquals(2L, request.getRequestId().longValue());
         assertEquals(requester, request.getRequester());
-        assertEquals(RequestType.EMPLOYEE, request.getRequestType());
+        assertEquals(RequestType.ASSIGN_EMPLOYEE, request.getRequestType());
         assertEquals(2L, request.getProjectId().longValue());
         assertEquals(employeeIds, request.getEmployeeIds());
         assertEquals("Training request", request.getRequestDetails());
@@ -66,7 +66,7 @@ public class RequestTest {
     
     @Test
     public void testToString() {
-        Request request = new Request(3L, requester, RequestType.EMPLOYEE, null, null, "Meeting request", RequestStatus.REJECT);
+        Request request = new Request(3L, requester, RequestType.ASSIGN_EMPLOYEE, null, null, "Meeting request", RequestStatus.REJECT);
         String expected = "Request [requestId=3, requester=" + requester + ", requestType=EMPLOYEE, projectId=null, employeeIds=null, requestDetails=Meeting request, status=REJECT]";
         assertEquals(expected, request.toString());
     }

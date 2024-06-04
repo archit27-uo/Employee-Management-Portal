@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
     showHomePage();
 });
+var token = localStorage.getItem("authToken");
+const headers = new Headers();
+headers.set('Authorization', 'Basic ' + token);
+headers.set('Content-Type', 'application/json');
 
 function showHomePage() {
     document.getElementById('home-page').style.display = 'block';
@@ -27,18 +31,15 @@ function showProfile() {
 }
 
 function fetchEmployeeInfo() {
-    const username = 'harsh@mail.com';
-    const password = 'harsh123'; 
-    const headers = new Headers();
-    headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
+  
 
     fetch('http://localhost:8080/api/employee/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const employeeDetails = `
-                <p>Name: ${data.fullName}</p>
-                <p>Project: ${data.project ? data.project.name : 'None'}</p>
-                <p>Manager: ${data.manager ? data.manager.name : 'None'}</p>
+            <h3>Welcome ! ${data.fullName}</h3>
+            <p>Project : ${data.project ? data.project.projectName : 'None'}</p>
+            <p>Manager : ${data.manager ? data.manager.managerName : 'None'}</p>
             `;
             document.getElementById('employee-details').innerHTML = employeeDetails;
         })
@@ -47,20 +48,19 @@ function fetchEmployeeInfo() {
         });
 }
 
+
 function fetchEmployeeProfile() {
-    const username = 'harsh@mail.com';
-    const password = 'harsh123'; 
-    const headers = new Headers();
-    headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
+   
 
     fetch('http://localhost:8080/api/employee/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const profileDetails = `
-                <p>User ID: ${data.user.userId}</p>
-                <p>Name: ${data.fullName}</p>
-                <p>Email: ${data.user.userEmail}</p>
-                <p>Skills: ${data.skills.join(', ')}</p>
+            <h3>${data.fullName} <i onclick="editProfile(${data.user.userId})" class="fas fa-edit" style="cursor: pointer;"></i></h3>
+            
+            <p>ID : ${data.user.userId} </p>
+            <p>Email : ${data.user.userEmail}</p>
+            <p>Skills : ${data.skills.join(', ')}</p>
             `;
             document.getElementById('profile-details').innerHTML = profileDetails;
         })
@@ -69,11 +69,67 @@ function fetchEmployeeProfile() {
         });
 }
 
+
+
+function editProfile(userId) {
+    // Fetch the current profile details
+    fetch(`http://localhost:8080/api/employee/info`, {
+        method: 'GET',
+        headers: headers,
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to fetch profile details for editing');
+        }
+    })
+    .then(data => {
+        // Display the modal with pre-filled data for editing
+        document.getElementById('editProfileModal').style.display = 'block';
+        document.getElementById('editUserId').value = data.user.userId;
+        document.getElementById('editFullName').value = data.fullName;
+        document.getElementById('editUserEmail').value = data.user.userEmail;
+        document.getElementById('editSkills').value = data.skills.join(', ');
+    })
+    .catch(error => {
+        showMessage('Error fetching profile details for editing: ' + error.message, 'error');
+    });
+}
+
+// Function to submit the edited profile details
+function submitEditProfileForm(event) {
+    event.preventDefault();
+
+    const userId = document.getElementById('editUserId').value;
+    const fullName = document.getElementById('editFullName').value;
+    const userEmail = document.getElementById('editUserEmail').value;
+    const skills = document.getElementById('editSkills').value.split(',').map(skill => skill.trim());
+
+   // const updatedProfile = 
+
+    fetch(`http://localhost:8080/api/employee/skills`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(skills)
+    })
+    .then(response => {
+        if (response.ok) {
+            showMessage('Profile updated successfully', 'success');
+            document.getElementById('editProfileModal').style.display = 'none';
+            fetchProfileDetails();
+        } else {
+            throw new Error('Failed to update profile');
+        }
+    })
+    .catch(error => {
+        showMessage('Error updating profile: ' + error.message, 'error');
+    });
+}
+
+
 function fetchAllEmployees() {
-    const username = 'harsh@mail.com';
-    const password = 'harsh123'; 
-    const headers = new Headers();
-    headers.set('Authorization', 'Basic ' + btoa(username + ":" + password));
+   
 
     fetch('http://localhost:8080/api/employee/all', { headers: headers })
         .then(response => response.json())
@@ -85,12 +141,12 @@ function fetchAllEmployees() {
                 employeeCard.className = 'employee-card';
 
                 const employeeDetails = `
-                    <div class="details">
-                        <p>Name: ${employee.fullName}</p>
-                        <p>Project: ${employee.project ? employee.project.name : 'None'}</p>
-                        <p>Manager: ${employee.manager ? employee.manager.name : 'None'}</p>
-                        <p>Skills: ${employee.skills.join(', ')}</p>
-                    </div>
+                <div class="details">
+                <h3>${employee.fullName}</h3>
+                <p>Project: ${employee.project ? employee.project.name : 'None'}</p>
+                <p>Manager: ${employee.manager ? employee.manager.name : 'None'}</p>
+                <p>Skills: ${employee.skills.join(', ')}</p>
+            </div>
                 `;
 
                 employeeCard.innerHTML = employeeDetails;
@@ -100,6 +156,14 @@ function fetchAllEmployees() {
         .catch(error => {
             console.error('Error fetching employee list:', error);
         });
+}
+
+function logout() {
+    // Clear the auth token from local storage
+    localStorage.removeItem('authToken');
+
+    // Redirect to the login page
+    window.location.href = '../login/login.html';
 }
 
 function showMessage(message, type) {

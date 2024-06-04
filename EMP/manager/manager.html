@@ -1,43 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="sidebar">
+
         <h2>Manager Dashboard</h2>
+
         <ul>
             <li><a href="#" onclick="showHomePage()">Home</a></li>
             <li><a href="#" onclick="showAllEmployees()">Employees</a></li>
             <li><a href="#" onclick="showAllManagers()">Managers</a></li>
             <li><a href="#" onclick="showAllProjects()">Projects</a></li>
+            <li><a href="#" onclick="showRequests()">Request</a></li>
         </ul>
+
         <a href="#" class="profile" onclick="showProfile()">Profile</a>
-        <a href="#" class="logout">Logout</a>
+
+        <div id="line"></div>
+
+        <a href="#" onclick="logout()" class="logout">Logout</a>
     </div>
+
     <div class="main-content">
+
         <div id="home-page">
+
             <h3>Your Project and Team</h3>
             <div id="manager-details"></div>
         </div>
-        <div id="employee-list" class="employee-list" style="display: none;">
-            <!-- Employee cards will be appended here -->
+
+        <div id="employee" class="employee" style="display: none;">
+            <div class="employee-filter-section">
+                <h3>Filter Employees by Skills</h3>
+                <label for="skills">Skills (comma separated):</label>
+                <input type="text" id="skills" name="skills">
+                <button onclick="filterEmployees()">Filter</button>
+            </div>
+            <div class="filter-bar">
+                <button onclick="filterEmployees('all')">ALL</button>
+                <button onclick="filterEmployees('assigned')">ASSIGNED</button>
+                <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
+            </div>
+
+            <div id="employee-list" class="employee-list">
+                <!-- Employee cards will be appended here -->
+            </div>
+
         </div>
+
         <div id="manager-list" class="manager-list" style="display: none;">
             <!-- Manager cards will be appended here -->
         </div>
+
         <div id="project-list" class="project-list" style="display: none;">
             <!-- Project cards will be appended here -->
         </div>
+        <div id="request" class="request" style="display: none;">
+            <button onclick="openRequestModal()" class="button">Add Request</button>
+            <div id="request-list" class="employee-list">
+                <!-- Employee cards will be appended here -->
+            </div>
+        </div>
         <div id="profile-page" style="display: none;">
-            <h3>Your Profile</h3>
             <div id="profile-details"></div>
         </div>
+
+
+
+
+        <div id="requestModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeRequestModal()">&times;</span>
+                <form id="requestForm" onsubmit="submitRequestForm(event)">
+                   
+                    
+                    <label for="requestType">Request Type:</label>
+                    <select id="requestType" name="requestType" required>
+                        <option value="ASSIGN_EMPLOYEE">ASSIGN_EMPLOYEE</option>
+                        <option value="UNASSIGN_EMPLOYEE">UNASSIGN_EMPLOYEE</option>
+                        <option value="PROJECT_RESOURCE">PROJECT_RESOURCE</option>
+                    </select>
+                    
+                    <label for="projectId">Project ID:</label>
+                    <input type="number" id="projectId" name="projectId" >
+                    
+                    <label for="employeeIds">Employee IDs (comma separated):</label>
+                    <input type="text" id="employeeIds" name="employeeIds" >
+                    
+                    <label for="requestDetails">Request Details:</label>
+                    <textarea id="requestDetails" name="requestDetails"></textarea>
+                    
+                    <button type="submit">Submit Request</button>
+                </form>
+            </div>
+        </div>
+
         <div id="message" class="message"></div>
     </div>
+
     <script src="manager-scripts.js" defer></script>
 </body>
+
 </html>

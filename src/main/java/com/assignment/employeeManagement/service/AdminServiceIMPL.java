@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.assignment.employeeManagement.controller.AdminController;
 import com.assignment.employeeManagement.dto.EmployeeDTO;
+import com.assignment.employeeManagement.dto.ManagerDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
@@ -123,6 +124,7 @@ public class AdminServiceIMPL implements AdminService{
 		
 		
 		employee.setProject(project);
+		employee.setManager(project.getManager());
 		return employeeRepository.save(employee);
 	}
 
@@ -139,7 +141,7 @@ public class AdminServiceIMPL implements AdminService{
 	public Request approveRequest(Long requestId) {
 		Request request = requestRepository.findById(requestId)
 				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
-		if(request.getRequestType()==RequestType.EMPLOYEE) {
+		if(request.getRequestType()==RequestType.ASSIGN_EMPLOYEE) {
 			int len = request.getEmployeeIds().size();
 			for(int i=0; i<len; i++) {
 				Employee employee = employeeRepository.findById(request.getEmployeeIds().get(i))
@@ -153,19 +155,29 @@ public class AdminServiceIMPL implements AdminService{
 //		            }
 //				 else{
 				//employee.setProject(this.assignProjectToEmployee(requestId, requestId));
+				
 				employee.setManager(request.getRequester());
 				System.out.println(employee);
 //				 try {
 	                    employeeRepository.save(employee);
-	                    System.out.println("Saved in db");
+	                    
 	                  this.assignProjectToEmployee(employee.getEmployeeId(), request.getProjectId());
-	                    System.out.println(employee);
+	                   
 //	                } catch (org.springframework.dao.DataIntegrityViolationException e) {
 //	                    System.err.println("DataIntegrityViolationException: " + e.getMessage());
 //	                    throw new RuntimeException("Could not assign project to employee due to unique constraint violation.");
 //	                }
 		         }
 			
+		}else {
+			int len = request.getEmployeeIds().size();
+			for(int i=0; i<len; i++) {
+				Employee employee = employeeRepository.findById(request.getEmployeeIds().get(i))
+						.orElseThrow(()-> new IllegalArgumentException("Employee not found"));
+				employee.setManager(null);
+				employee.setProject(null);
+				employeeRepository.save(employee);
+			}
 		}
 		request.setStatus(RequestStatus.APPROVED);
 		return requestRepository.save(request);
@@ -183,7 +195,12 @@ public class AdminServiceIMPL implements AdminService{
 
 	@Override
 	public void deleteEmployee(Long employeeId) {
+		Employee employee = employeeRepository.findById(employeeId)
+				.orElseThrow(()->new IllegalArgumentException("UserId doesnot exist"));
+		
 		employeeRepository.deleteById(employeeId);
+		userRepository.deleteById(employee.getUser().getUserId());
+		System.out.println("deleted");
 		
 	}
 
@@ -226,6 +243,24 @@ public class AdminServiceIMPL implements AdminService{
 	public List<Request> getAllRequest() {
 		List<Request> requestList = requestRepository.findAll();
 		return requestList;
+	}
+
+
+
+	@Override
+	public Manager addmanager(ManagerDTO managerDTO) {
+		Manager manager = new Manager();
+		manager.setUser(userRepository.findById(managerDTO.getUserId())
+				.orElseThrow(()->new IllegalArgumentException("use not found")));
+		return managerRepository.save(manager);
+	}
+
+
+
+	@Override
+	public List<Manager> getAllManager() {
+		List<Manager> managerList = managerRepository.findAll();
+		return managerList;
 	}
 
 	

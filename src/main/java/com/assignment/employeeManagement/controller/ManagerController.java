@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.assignment.employeeManagement.dto.ManagerInfoDTO;
+import com.assignment.employeeManagement.dto.RequestDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
@@ -69,19 +71,16 @@ public class ManagerController {
 	}
 	
 	@PostMapping("/request/employees")
-    public ResponseEntity<Request> requestEmployeesForProject(
-            @RequestParam String email,
-            @RequestParam Long projectId,
-            @RequestBody List<Long> employeeIds) {
-		logger.info("API hit: /api/manager/employee method:POST body: "+employeeIds);
-        Request request = managerService.requestEmployeesForProject(email, projectId, employeeIds);
+    public ResponseEntity<Request> requestEmployeesForProject(@RequestBody RequestDTO requestDTO) {
+		logger.info("API hit: /api/manager/employee method:POST body: "+requestDTO);
+        Request request = managerService.requestEmployeesForProject(requestDTO);
         return ResponseEntity.ok(request);
     }
 	
 	@GetMapping("/info")
-	public Manager getManagerInfo(Principal principal) {
+	public ManagerInfoDTO getManagerInfo(Principal principal) {
 		logger.info("API hit: /api/manager/info method:GET");
-		Manager manager = managerService.getManagerInfo(principal);
+		ManagerInfoDTO manager = managerService.getManagerInfo(principal);
 		return manager;
 	}
 	

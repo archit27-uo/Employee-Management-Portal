@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.User;
 
@@ -25,6 +26,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	
 	Employee findByUser(User user);
 	
-	List<Employee> findByProject(Project project);
+	List<Employee> findAllByProject(Project project);
+	
+	List<Employee> findAllByManager(Manager manager);
 	
 }

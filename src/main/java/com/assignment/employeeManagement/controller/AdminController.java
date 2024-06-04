@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
+import com.assignment.employeeManagement.dto.ManagerDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
 import com.assignment.employeeManagement.dto.UserAddDTO;
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
@@ -70,8 +72,8 @@ public class AdminController {
 	public ResponseEntity<String> deleteEmployeeById(@PathVariable Long employeeId){
 		logger.info("API hit: /api/admin/employee/{employeeId} method:Delete");
 		try {
-		employeeService.deleteEmployee(employeeId);
-		return ResponseEntity.ok("Successfully Deleted");
+		adminService.deleteEmployee(employeeId);
+		return ResponseEntity.status(200).body("Successfully Deleted");
 		}catch(Exception e) {
 			return ResponseEntity.badRequest().body("Error");
 		}
@@ -134,8 +136,8 @@ public class AdminController {
 	@PostMapping("/user")
 	public User saveUser(@RequestBody UserAddDTO userAddDTO) {
 		logger.info("API hit: /api/admin/user method:POST body: "+userAddDTO);
-		User id = userService.addUser(userAddDTO);
-		return id;
+		User user = userService.addUser(userAddDTO);
+		return user;
 	}
     
     @GetMapping("/request")
@@ -145,5 +147,17 @@ public class AdminController {
     	return requestList;
     }
     
+    @GetMapping("/manager")
+    public List<Manager> getAllManager(){
+    	logger.info("API hit: /api/admin/manager method:GET");
+    	List<Manager> managerList = adminService.getAllManager();
+    	return managerList;
+    }
     
+    @PostMapping("/manager")
+    public Manager addManager(@RequestBody ManagerDTO managerDTO) {
+    	logger.info("API hit: /api/admin/manager method:POST");
+    	Manager manager = adminService.addmanager(managerDTO);
+    	return manager;
+    }
 }
