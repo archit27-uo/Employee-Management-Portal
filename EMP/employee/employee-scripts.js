@@ -39,7 +39,7 @@ function fetchEmployeeInfo() {
             const employeeDetails = `
             <h3>Welcome ! ${data.fullName}</h3>
             <p>Project : ${data.project ? data.project.projectName : 'None'}</p>
-            <p>Manager : ${data.manager ? data.manager.managerName : 'None'}</p>
+            <p>Manager : ${data.manager ? data.manager.user.userName : 'None'}</p>
             `;
             document.getElementById('employee-details').innerHTML = employeeDetails;
         })
@@ -100,10 +100,6 @@ function editProfile(userId) {
 // Function to submit the edited profile details
 function submitEditProfileForm(event) {
     event.preventDefault();
-
-    const userId = document.getElementById('editUserId').value;
-    const fullName = document.getElementById('editFullName').value;
-    const userEmail = document.getElementById('editUserEmail').value;
     const skills = document.getElementById('editSkills').value.split(',').map(skill => skill.trim());
 
    // const updatedProfile = 

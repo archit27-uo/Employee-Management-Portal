@@ -14,9 +14,11 @@ public interface ManagerService {
 	List<Employee> getAllEmployees();
     List<Manager> getAllManagers();
     List<Project> getAllProjects();
+    List<Request> getAllRequestByManager(Long managerId);
     List<Employee> getAllEmployeeByProject(Long projectId);
     List<Employee> filterEmployeesBySkills(List<String> skills);
     List<Employee> getUnassignedEmployees();
+    List<Employee> getAllEmployeeByManager(Principal principal);
     Request requestEmployeesForProject(RequestDTO requestDTO);
 	ManagerInfoDTO getManagerInfo(Principal principal);
 }

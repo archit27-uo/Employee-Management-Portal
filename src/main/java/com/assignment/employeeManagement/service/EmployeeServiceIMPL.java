@@ -78,10 +78,7 @@ public class EmployeeServiceIMPL implements EmployeeService {
 		Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
 
-        User user = userRepository.findById(employeeDTO.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-
-        employee.setUser(user);
+       
         employee.setFullName(employeeDTO.getFullName());
 
         if (employeeDTO.getProjectId() != null) {
@@ -155,7 +152,7 @@ public Employee updateSkills(Principal principal, List<String> skills) {
     }
     
     Set<String> skillSet = new HashSet<>(skills);
-    skillSet.addAll(employee.getSkills());
+    
     employee.setSkills(skillSet);
 
     return employeeRepository.save(employee);

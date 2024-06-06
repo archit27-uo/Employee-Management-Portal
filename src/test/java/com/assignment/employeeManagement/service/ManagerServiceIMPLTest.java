@@ -1,12 +1,15 @@
 package com.assignment.employeeManagement.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,11 +22,14 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 
 import com.assignment.employeeManagement.dto.ManagerInfoDTO;
+import com.assignment.employeeManagement.dto.RequestDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
+import com.assignment.employeeManagement.model.RequestStatus;
+import com.assignment.employeeManagement.model.RequestType;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
@@ -46,13 +52,51 @@ public class ManagerServiceIMPLTest {
 
     @Mock
     private RequestRepository requestRepository;
-
+    
+    @Mock
+    private Principal principal;
+    
     @InjectMocks
     private ManagerServiceIMPL managerService;
-
+    
+    @InjectMocks
+    private AdminServiceIMPL adminServiceImpl;
+    
+    private RequestDTO requestDTO;
+    private Manager manager;
+    private Request request;
+    private User user;
+    private Project project;
+    
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        
+        user = new User();
+        user.setUserEmail("test@example.com");
+        user.setUserName("John Doe");
+        manager = new Manager();
+        manager.setManagerId(1L);
+        manager.setUser(user);
+        
+        requestDTO = new RequestDTO();
+        requestDTO.setRequesterId(1L);
+        requestDTO.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+        requestDTO.setProjectId(100L);
+        requestDTO.setEmployeeIds(Arrays.asList(101L, 102L, 103L));
+        requestDTO.setRequestDetails(null);
+
+        request = new Request();
+        request.setRequester(manager);
+        request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+        request.setProjectId(100L);
+        request.setEmployeeIds(Arrays.asList(101L, 102L, 103L));
+        request.setRequestDetails("Project ID: 100, Employee IDs: [101, 102, 103]");
+        request.setStatus(RequestStatus.PENDING);
+        
+        project = new Project();
+        project.setProjectId(100L);
+        project.setManager(manager);
     }
 
     @Test
@@ -94,22 +138,45 @@ public class ManagerServiceIMPLTest {
 //    }
     
     @Test
-    public void testGetManagerInfo() {
-        Principal principal = mock(Principal.class);
-        when(principal.getName()).thenReturn("manager@example.com");
+    public void testGetManagerInfo_Success() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(managerRepository.findByUser(user)).thenReturn(manager);
+        when(projectRepository.findAllByManager(manager)).thenReturn(Collections.singletonList(project));
+        when(employeeRepository.findAllByManager(manager)).thenReturn(Collections.emptyList());
 
-        User user = new User();
-        user.setUserEmail("manager@example.com");
+        ManagerInfoDTO managerInfoDTO = managerService.getManagerInfo(principal);
 
-        ManagerInfoDTO managerInfoDTO = new ManagerInfoDTO();
-        ManagerInfoDTO manager = new ManagerInfoDTO();
+        assertNotNull(managerInfoDTO);
+        assertEquals(manager.getManagerId(), managerInfoDTO.getManagerId());
+        assertEquals(user.getUserName(), managerInfoDTO.getFullName());
+        assertEquals(1, managerInfoDTO.getProjectList().size());
+        assertEquals(0, managerInfoDTO.getEmployeeList().size());
+    }
 
-        when(userRepository.findByUserEmail("manager@example.com")).thenReturn(user);
-        //when(managerRepository.findByUser(user)).thenReturn(manager);
+    @Test
+    public void testGetManagerInfo_UserNotFound() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(null);
 
-        ManagerInfoDTO foundManager = managerService.getManagerInfo(principal);
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            managerService.getManagerInfo(principal);
+        });
 
-        assertEquals(manager, foundManager);
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    public void testGetManagerInfo_ManagerNotFound() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(managerRepository.findByUser(user)).thenReturn(null);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            managerService.getManagerInfo(principal);
+        });
+
+        assertEquals("Employee not found", exception.getMessage());
     }
 
     @Test
@@ -167,5 +234,20 @@ public class ManagerServiceIMPLTest {
 
         assertEquals(2, managers.size());
         verify(managerRepository, times(1)).findAll();
+    }
+    
+    @Test
+    public void testRequestEmployeesForProject() {
+        when(managerRepository.findByManagerId(requestDTO.getRequesterId())).thenReturn(manager);
+        when(requestRepository.save(any(Request.class))).thenReturn(request);
+
+        Request createdRequest = managerService.requestEmployeesForProject(requestDTO);
+
+        assertEquals(request.getRequester(), createdRequest.getRequester());
+        assertEquals(request.getRequestType(), createdRequest.getRequestType());
+        assertEquals(request.getProjectId(), createdRequest.getProjectId());
+        assertEquals(request.getEmployeeIds(), createdRequest.getEmployeeIds());
+        assertEquals(request.getRequestDetails(), createdRequest.getRequestDetails());
+        assertEquals(RequestStatus.PENDING, createdRequest.getStatus());
     }
 }

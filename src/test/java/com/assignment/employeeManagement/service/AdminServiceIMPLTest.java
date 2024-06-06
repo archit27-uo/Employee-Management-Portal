@@ -59,6 +59,8 @@ public class AdminServiceIMPLTest {
 
 	    @InjectMocks
 	    private AdminServiceIMPL adminService;
+	    
+	   
 
 	    @BeforeEach
 	    void setUp() {
@@ -215,11 +217,25 @@ public class AdminServiceIMPLTest {
 
 	    @Test
 	    public void testDeleteEmployee() {
-	        doNothing().when(employeeRepository).deleteById(1L);
+	        // Mocking data
+	        Long employeeId = 1L;
+	        Employee employee = new Employee();
+	        employee.setEmployeeId(employeeId);
 
-	        adminService.deleteEmployee(1L);
+	        User user = new User();
+	        user.setUserId(1);
+	        employee.setUser(user);
 
-	        verify(employeeRepository, times(1)).deleteById(1L);
+	        // Mocking repository behavior
+	        when(employeeRepository.findById(employeeId)).thenReturn(java.util.Optional.of(employee));
+
+	        // Calling the method to be tested
+	        adminService.deleteEmployee(employeeId);
+
+	        // Verifying interactions
+	        verify(employeeRepository, times(1)).findById(employeeId);
+	        verify(employeeRepository, times(1)).deleteById(employeeId);
+	        verify(userRepository, times(1)).deleteById(user.getUserId());
 	    }
 
 	    @Test

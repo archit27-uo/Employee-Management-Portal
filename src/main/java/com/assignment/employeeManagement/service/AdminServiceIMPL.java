@@ -133,7 +133,7 @@ public class AdminServiceIMPL implements AdminService{
 		Employee employee = employeeRepository.findById(employeeId)
 				.orElseThrow(()->new IllegalArgumentException("Invalid Employee ID"));
 		employee.setProject(null);
-	
+		employee.setManager(null);	
 		return employeeRepository.save(employee);
 	}
 
@@ -200,7 +200,6 @@ public class AdminServiceIMPL implements AdminService{
 		
 		employeeRepository.deleteById(employeeId);
 		userRepository.deleteById(employee.getUser().getUserId());
-		System.out.println("deleted");
 		
 	}
 
@@ -209,10 +208,10 @@ public class AdminServiceIMPL implements AdminService{
 		Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
 
-        User user = userRepository.findById(employeeDTO.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-
-        employee.setUser(user);
+//        User user = userRepository.findById(employeeDTO.getUserId())
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+//
+//        employee.setUser(user);
         employee.setFullName(employeeDTO.getFullName());
 
         if (employeeDTO.getProjectId() != null) {

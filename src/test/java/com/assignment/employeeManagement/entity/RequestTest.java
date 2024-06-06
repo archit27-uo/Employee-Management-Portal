@@ -67,7 +67,7 @@ public class RequestTest {
     @Test
     public void testToString() {
         Request request = new Request(3L, requester, RequestType.ASSIGN_EMPLOYEE, null, null, "Meeting request", RequestStatus.REJECT);
-        String expected = "Request [requestId=3, requester=" + requester + ", requestType=EMPLOYEE, projectId=null, employeeIds=null, requestDetails=Meeting request, status=REJECT]";
+        String expected = "Request [requestId=3, requester=" + requester + ", requestType=ASSIGN_EMPLOYEE, projectId=null, employeeIds=null, requestDetails=Meeting request, status=REJECT]";
         assertEquals(expected, request.toString());
     }
 }

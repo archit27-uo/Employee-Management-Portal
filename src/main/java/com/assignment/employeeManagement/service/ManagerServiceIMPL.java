@@ -119,6 +119,26 @@ public class ManagerServiceIMPL implements ManagerService {
 		return employeeList;
 	}
 
+	@Override
+	public List<Request> getAllRequestByManager(Long managerId) {
+		Manager requester = managerRepository.findByManagerId(managerId);
+		List<Request> requestList = requestRepository.findAllByRequester(requester);
+		return requestList;
+	}
+
+	@Override
+	public List<Employee> getAllEmployeeByManager(Principal principal) {
+		String email = principal.getName();
+	    User user = userRepository.findByUserEmail(email);
+	    if (user == null) {
+	        throw new IllegalArgumentException("User not found");
+	    }
+
+	    Manager manager = managerRepository.findByUser(user);
+		List<Employee> employeeList = employeeRepository.findAllByManager(manager);
+		return  employeeList;
+	}
+
 
 	}
 

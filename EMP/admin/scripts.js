@@ -28,7 +28,7 @@ function showEmployees() {
     document.getElementById('project').style.display = 'none';
     document.getElementById('request-list').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
-    document.getElementById('employee-list').style.display = 'block';
+    document.getElementById('employee').style.display = 'block';
 };
 
 function openAssignProjectModal(employeeId) {
@@ -168,7 +168,7 @@ function showProjects() {
     fetchProjects();
     
     document.getElementById('project').style.display = 'block';
-    document.getElementById('employee-list').style.display = 'none';
+    document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
     document.getElementById('request-list').style.display = 'none';
 
@@ -187,7 +187,8 @@ function fetchProjects() {
         data.forEach(project => {
             const projectCard = document.createElement('div');
             projectCard.classList.add('project-card');
-            
+            projectCard.setAttribute('data-project-id', project.projectId);
+
             let managerInfo = project.manager ? 
                 `<p>Manager: ${project.manager.user.userName}</p>` :
                 `<p>No manager assigned</p>`;
@@ -197,12 +198,65 @@ function fetchProjects() {
                     <h3>${project.projectName}</h3>
                     ${managerInfo}
                 </div>
-                <button class="expand-btn" onclick="fetchEmployees(${project.projectId})">Expand</button>
+                <button class="expand-btn" onclick="fetchEmployeesByProject(${project.projectId})">Expand</button>
             `;
             projectList.appendChild(projectCard);
         });
     })
     .catch(error => console.error('Error:', error));
+}
+
+function fetchEmployeesByProject(projectId) {
+    fetch(`http://localhost:8080/api/manager/employee/project/${projectId}`, {
+        method: 'GET',
+        headers: headers,
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch employees');
+        }
+        return response.json();
+    })
+    .then(employees => {
+        displayEmployees(projectId, employees);
+    })
+    .catch(error => {
+        console.error('Error fetching employees:', error);
+        showMessage('Error fetching employees: ' + error.message, 'error');
+    });
+}
+
+// Function to display employees under the relevant project
+function displayEmployees(projectId, employees) {
+    console.log("here");
+    const projectCard = document.querySelector(`[data-project-id="${projectId}"]`);
+    let employeeList = projectCard.querySelector('.employee-list');
+
+    // If the employee list doesn't exist, create it
+    if (!employeeList) {
+        employeeList = document.createElement('div');
+        employeeList.classList.add('employee-list');
+        projectCard.appendChild(employeeList);
+    }
+   
+    // Clear previous employee list content
+    employeeList.innerHTML = '';
+
+    // Create a list of employees
+    employees.forEach(employee => {
+        const employeeCard = document.createElement('div');
+        employeeCard.classList.add('employee-card');
+
+        let skills = employee.skills.join(', ');
+
+        employeeCard.innerHTML = `
+            <p>Employee ID: ${employee.employeeId}</p>
+            <p>Full Name: ${employee.fullName}</p>
+            <p>Skills: ${skills}</p>
+        `;
+
+        employeeList.appendChild(employeeCard);
+    });
 }
 
 function showProjects() {
@@ -211,7 +265,7 @@ function showProjects() {
     // Show project list and hide other lists
     document.getElementById('project').style.display = 'block';
     document.getElementById('request-list').style.display = 'none';
-    document.getElementById('employee-list').style.display = 'none';
+    document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
 }
 
@@ -219,7 +273,7 @@ function showProjects() {
 function showManagers(){
     document.getElementById('project').style.display = 'none';
     document.getElementById('request-list').style.display = 'none';
-    document.getElementById('employee-list').style.display = 'none';
+    document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'block';
     fetchAllManagers();
 }
@@ -258,7 +312,7 @@ function showRequests() {
     // Show request list and hide other lists
     document.getElementById('project').style.display = 'none';
     document.getElementById('request-list').style.display = 'block';
-    document.getElementById('employee-list').style.display = 'none';
+    document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
     fetchRequests();
 }
@@ -287,15 +341,16 @@ function fetchRequests() {
                         
                         <div class="lst">
                         <p>Project ID: ${request.projectId}</p>
-                        <div> <i class="fas fa-times" style="color: red; cursor: pointer;" onclick="handleRequest('reject', ${request.requestId})"></i>
-                        &nbsp  &nbsp
-                        <i class="fas fa-check" style="color: green; cursor: pointer;" onclick="handleRequest('approve', ${request.requestId})"></i></div>
-                       
-                    </div>
+                     
                         <p>Employee IDs: ${request.employeeIds.join(', ')}</p>
                         <p>Request Details: ${request.requestDetails}</p>
                         <p>Status: ${request.status}</p>
-                    </div>
+              
+                        <div> <i class="fas fa-times" style="color: red; cursor: pointer;" onclick="handleRequest('reject', ${request.requestId})"></i>
+                        &nbsp  &nbsp
+                        <i class="fas fa-check" style="color: green; cursor: pointer;" onclick="handleRequest('approve', ${request.requestId})"></i></div>
+                        </div>
+                   
                 `;
 
                 requestCard.innerHTML = requestDetails;

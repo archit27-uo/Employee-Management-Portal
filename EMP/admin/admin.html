@@ -40,11 +40,7 @@
 
         </div>
 
-        <div class="filter-bar">
-            <button onclick="filterEmployees('all')">ALL</button>
-            <button onclick="filterEmployees('assigned')">ASSIGNED</button>
-            <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
-        </div>
+        
 
         <div id="project" class="project" style="display: none;">
             <button onclick="openAddProjectModal()" >Add Project</button>
@@ -53,9 +49,18 @@
             </div>
         </div>
 
-        <div id="employee-list" class="employee-list">
-            <!-- Employee cards will be appended here -->
+
+        <div id="employee" class="employee">
+            <div class="filter-bar">
+                <button onclick="filterEmployees('all')">ALL</button>
+                <button onclick="filterEmployees('assigned')">ASSIGNED</button>
+                <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
+            </div>
+            <div id="employee-list" class="employee-list">
+                <!-- Employee cards will be appended here -->
+            </div>
         </div>
+        
 
         <div id="manager-list" class="manager-list" style="display: none;">
             <!-- Request tiles will be appended here -->

@@ -90,4 +90,15 @@ public class ManagerController {
 		List<Employee> employeeList = managerService.getAllEmployeeByProject(projectId);
 		return employeeList;
 	}
+	
+	@GetMapping("/request/manager/{managerId}")
+	public List<Request> getRequestByManagerId(@PathVariable Long managerId){
+		List<Request> requestList = managerService.getAllRequestByManager(managerId);
+		return requestList;
+	}
+	
+	@GetMapping("/employee/team")
+	public List<Employee> getMyEmployee(Principal principal){
+		return managerService.getAllEmployeeByManager(principal);
+	}
 }

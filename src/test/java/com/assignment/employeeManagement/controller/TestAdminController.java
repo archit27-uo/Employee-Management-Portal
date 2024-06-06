@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -18,19 +19,24 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
+import com.assignment.employeeManagement.dto.ManagerDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
 import com.assignment.employeeManagement.dto.UserAddDTO;
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
@@ -39,7 +45,7 @@ import com.assignment.employeeManagement.service.EmployeeService;
 import com.assignment.employeeManagement.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
+@ExtendWith(SpringExtension.class)
 public class TestAdminController {
 	
 	private MockMvc mockMvc;
@@ -57,11 +63,24 @@ public class TestAdminController {
 	private AdminController adminController;
 	
 	private ObjectMapper objectMapper = new ObjectMapper();
+	private List<Manager> managerList;
+	private ManagerDTO managerDTO;
+	private Manager manager;
 	
 	@BeforeEach
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
 		mockMvc = MockMvcBuilders.standaloneSetup(adminController).build();
+		manager = new Manager();
+        manager.setManagerId(1L);
+        User user = new User();
+        manager.setUser(user);
+        
+
+        managerList = Arrays.asList(manager);
+
+        managerDTO = new ManagerDTO();
+       managerDTO.setUserId(1);
 	}
 	
 	 @Test
@@ -315,6 +334,28 @@ public class TestAdminController {
 			skillsSet.add("Spring");
 			employee1.setSkills(skillsSet);
 			return employee1;
+	    }
+	    
+	    @Test
+	    public void testGetAllManager() throws Exception {
+	        when(adminService.getAllManager()).thenReturn(managerList);
+
+	        mockMvc.perform(get("/api/admin/manager"))
+	                .andExpect(status().isOk())
+	                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	                
+	    }
+
+	    @Test
+	    public void testAddManager() throws Exception {
+	        when(adminService.addmanager(any(ManagerDTO.class))).thenReturn(manager);
+
+	        mockMvc.perform(post("/api/admin/manager")
+	                .contentType(MediaType.APPLICATION_JSON)
+	                .content(new ObjectMapper().writeValueAsString(managerDTO)))
+	                .andExpect(status().isOk())
+	                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	               
 	    }
 	}
 

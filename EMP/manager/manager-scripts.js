@@ -68,11 +68,11 @@ function showRequests(){
     document.getElementById('manager-list').style.display = 'none';
     document.getElementById('project-list').style.display = 'none';
     document.getElementById('profile-page').style.display = 'none';
-    document.getElementById('request').style.display = 'flex';
+    document.getElementById('request').style.display = 'block';
+    fetchAllRequest(managerId);
 }
 function fetchManagerInfo() {
   
-
     fetch('http://localhost:8080/api/manager/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
@@ -120,6 +120,36 @@ function fetchManagerProfile() {
 function filterEmployees(filter) {
     fetchEmployees(filter);
 }
+function fetchMyEmployees(){
+    fetch('http://localhost:8080/api/manager/employee/team', { headers: headers })
+        .then(response => response.json())
+        .then(data => {
+            const employeeList = document.getElementById('employee-list');
+            employeeList.innerHTML = ''; 
+           
+            data.forEach(employee => {
+                
+                    const employeeCard = document.createElement('div');
+                    employeeCard.className = 'employee-card';
+
+                    const employeeDetails = `<div class="details">
+                    <div class="details">
+                    <h3>${employee.fullName}</h3>
+                    <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
+                    <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                    <p>Skills : ${employee.skills.join(', ')}</p>
+                    <button onclick="requestAdmin(${employee}, "UNASSIGN_EMPLOYEE")">Unassign</button>
+                </div> `;
+                    
+                    employeeCard.innerHTML = employeeDetails;
+                    employeeList.appendChild(employeeCard);
+          
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching employee data:', error);
+        });
+}
 function fetchAllEmployees() {
    
         //     const employeeList = document.getElementById('employee-list');
@@ -134,7 +164,7 @@ function fetchAllEmployees() {
         // filterBar.innerHTML = employeeFilter;
         // employeeList.appendChild(filterBar);
       
-        filterEmployees("all");
+        fetchEmployees("all");
      
         //     data.forEach(employee => {
         //         const employeeCard = document.createElement('div');
@@ -160,7 +190,7 @@ function fetchAllEmployees() {
 
         }
 function fetchEmployees(filter) {
-   
+    console.log("fetch all")
 
     fetch('http://localhost:8080/api/manager/employee', { headers: headers })
         .then(response => response.json())
@@ -173,24 +203,28 @@ function fetchEmployees(filter) {
                     const employeeCard = document.createElement('div');
                     employeeCard.className = 'employee-card';
 
-                    const employeeDetails = filter==='unassigned'?`<div class="details">
+                    const employeeDetails = filter==='unassigned'?`
+            
                     <div class="details">
                     <h3>${employee.fullName}</h3>
+                    <p>EmployeeId : ${employee.employeeId}</p>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
                     <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                     <p>Skills : ${employee.skills.join(', ')}</p>
-                    <button onclick="requestEmployee(${employee.employeeId})">Request</button>
+                   
                 </div> ` :`
-                    <div class="details">
+                    
+            
                     <div class="details">
                     <h3>${employee.fullName}</h3>
+                    <p>EmployeeId : ${employee.employeeId}</p>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
                     <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                     <p>Skills : ${employee.skills.join(', ')}</p>
                     
-                </div>           
-                    `;
-                    
+                         
+                </div>    `;
+                    // <button onclick="requestEmployee(${employee.employeeId})">Request</button>
                     employeeCard.innerHTML = employeeDetails;
                     employeeList.appendChild(employeeCard);
                 }
@@ -259,21 +293,37 @@ function fetchAllProjects() {
         });
 }
 
-function requestEmployee(employeeId) {
+function requestAdmin(employee, requestTypeName) {
  
 
-    fetch('http://localhost:8080/api/employee/unassigned', {
+    const requestData = {
+        requesterId: parseInt(this.managerId),
+        requestType: requestTypeName,
+        projectId: parseInt(employee.projectId),
+        employeeIds:parseInt(employee.employeeId),
+        requestDetails: null
+    };
+
+    let apiUrl = 'http://localhost:8080/api/manager/request/employees';
+
+    fetch(apiUrl, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ employeeId })
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Request failed');
+        }
+    })
     .then(data => {
-        showMessage('Employee requested successfully!', 'success');
+        showMessage('Request submitted successfully!', 'success');
+        closeRequestModal();
     })
     .catch(error => {
-        console.error('Error requesting employee:', error);
-        showMessage('Failed to request employee.', 'error');
+        showMessage('Error submitting request: ' + error.message, 'error');
     });
 }
 
@@ -344,6 +394,7 @@ function filterEmployees() {
         headers: headers,
     })
     .then(response => {
+        
         if (response.ok) {
             return response.json();
         } else {
@@ -358,25 +409,100 @@ function filterEmployees() {
     });
 }
 
+
 // Function to display filtered employees
 function displayFilteredEmployees(employees) {
-    const employeeList = document.getElementById('employeeList');
+    
+    const employeeList = document.getElementById('employee-list');
     employeeList.innerHTML = '';
 
     if (employees.length === 0) {
         employeeList.innerHTML = '<p>No employees found with the specified skills.</p>';
         return;
     }
-
+    console.log("archit");
     employees.forEach(employee => {
-        const employeeCard = `
-            <div class="employee-card">
-                <h4>${employee.fullName}</h4>
-                <p>Employee ID: ${employee.employeeId}</p>
-                <p>Skills: ${employee.skills.join(', ')}</p>
-            </div>
-        `;
-        employeeList.innerHTML += employeeCard;
+        const employeeCard = document.createElement('div');
+        employeeCard.className = 'employee-card';
+        console.log(employee)
+        const employeeDetails = employee.project==null?`<div class="details">
+                    <div class="details">
+                    <h3>${employee.fullName}</h3>
+                    <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
+                    <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                    <p>Skills : ${employee.skills.join(', ')}</p>
+                    <button onclick="requestEmployee(${employee.employeeId})">Request</button>
+                </div> ` :`
+                    <div class="details">
+                    <div class="details">
+                    <h3>${employee.fullName}</h3>
+                    <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
+                    <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                    <p>Skills : ${employee.skills.join(', ')}</p>
+                    
+                </div>           
+                    `;
+        employeeCard.innerHTML = employeeDetails;
+        employeeList.appendChild(employeeCard);
+
+    });
+}
+
+function fetchAllRequest(managerId){
+    
+   
+    fetch(`http://localhost:8080/api/manager/request/manager/${managerId}`, {
+        method: 'GET',
+        headers: headers,
+        
+    })
+    .then(response => response.json())
+    .then(data => {
+        const requestList = document.getElementById('request-list');
+        requestList.innerHTML = '';  // Clear the list
+       
+        data.forEach(request => {
+          
+                const requestAccordion = document.createElement('div');
+                requestAccordion.className = 'accordion-item';
+
+               const requestDetails = `
+               <div class = "accordion">
+               <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Request Id : ${request.requestId}
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                <div class="lst">
+                <table>
+                <tr>
+                <td>Request Type: ${request.requestType}</td>
+                        
+                       
+                        <td>Project ID: ${request.projectId}</td>
+                     
+                        <td>Employee IDs: ${request.employeeIds.join(', ')}</td>
+                        <td>Request Details: ${request.requestDetails}</td>
+                        <td>Status: ${request.status}</td>
+                        </tr>
+                  </table>      
+                        
+                 </div> 
+                </div>
+              </div>
+              </div>`;
+
+                
+                
+              requestAccordion.innerHTML =requestDetails;
+                requestList.appendChild(requestAccordion);
+            
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching employee data:', error);
     });
 }
 

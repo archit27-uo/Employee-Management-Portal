@@ -45,6 +45,11 @@
   <version>2.4</version>
   <scope>provided</scope>
 </dependency>
+ 	<dependency>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <scope>test</scope>
+    </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -59,6 +64,10 @@
 		<dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-log4j2</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
 </dependency>
 <dependency>
     <groupId>junit</groupId>
@@ -93,6 +102,7 @@
     <artifactId>junit-jupiter-engine</artifactId>
     <scope>test</scope>
 </dependency>
+
 	</dependencies>
 
 	<build>

@@ -82,8 +82,8 @@ public class AdminController {
 	
 	@PutMapping("/employee/{employeeId}")
 	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
-		logger.info("API hit: /api/admin/employee/{employeeId} method:PUT");
-		Employee employee =  employeeService.updateEmployee(employeeId, employeeDTO);
+		logger.info("API hit: /api/admin/employee/{employeeId} method:PUT body: "+employeeDTO);
+		Employee employee = adminService.updateEmployee(employeeId, employeeDTO);
 		return ResponseEntity.ok(employee);
 		
 	}
