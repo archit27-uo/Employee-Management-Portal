@@ -28,6 +28,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	
 	List<Employee> findAllByProject(Project project);
 	
-	List<Employee> findAllByManager(Manager manager);
+	Optional<List<Employee>> findAllByManager(Manager manager);
 	
 }

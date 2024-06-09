@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.User;
+import com.assignment.employeeManagement.exception.ResourceNotFoundException;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
@@ -24,6 +27,7 @@ import com.assignment.employeeManagement.repository.UserLoginRepo;
 @Service
 public class EmployeeServiceIMPL implements EmployeeService {
 
+	private static final Logger logger = LogManager.getLogger(EmployeeServiceIMPL.class);
 	
 	@Autowired
 	private EmployeeRepository employeeRepository;
@@ -37,73 +41,60 @@ public class EmployeeServiceIMPL implements EmployeeService {
 	@Autowired
 	private ProjectRepository projectRepository;
 	
-	@Override
-	public Employee addEmployee(EmployeeDTO employeeDTO) {
-		
-		int userId = employeeDTO.getUserId();
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-		
-	    Long managerId = employeeDTO.getManagerId();
-	    Manager manager = null;
-	    if (managerId != null) {
-	        manager = managerRepository.findById(managerId)
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
-	    }
+	/*
+	 * @Override public Employee addEmployee(EmployeeDTO employeeDTO) {
+	 * 
+	 * int userId = employeeDTO.getUserId(); User user =
+	 * userRepository.findById(userId) .orElseThrow(() -> new
+	 * ResourceNotFoundException("Invalid user ID"));
+	 * 
+	 * Long managerId = employeeDTO.getManagerId(); Manager manager = null; if
+	 * (managerId != null) { manager = managerRepository.findById(managerId)
+	 * .orElseThrow(() -> new ResourceNotFoundException("Invalid manager ID")); }
+	 * 
+	 * Long projectId = employeeDTO.getProjectId(); Project project = null; if
+	 * (projectId != null) { project = projectRepository.findById(projectId)
+	 * .orElseThrow(() -> new ResourceNotFoundException("Invalid project ID")); }
+	 * 
+	 * 
+	 * Employee employee = new Employee( employeeDTO.getEmployeeId(), user,
+	 * employeeDTO.getFullName(), project, manager, employeeDTO.getSkills() );
+	 * 
+	 * employeeRepository.save(employee); return employee; }
+	 */
 
-	    Long projectId = employeeDTO.getProjectId();
-	    Project project = null;
-	    if (projectId != null) {
-	        project = projectRepository.findById(projectId)
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid project ID"));
-	    }
-		
-        
-        Employee employee = new Employee(
-				employeeDTO.getEmployeeId(),
-				user,
-				employeeDTO.getFullName(),
-				project,
-				manager,
-				employeeDTO.getSkills()
-				);
-		
-		employeeRepository.save(employee);
-		return employee;
-	}
-
-	@Override
-	public Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO) {
-		
-		Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
-
-       
-        employee.setFullName(employeeDTO.getFullName());
-
-        if (employeeDTO.getProjectId() != null) {
-            Project project = projectRepository.findById(employeeDTO.getProjectId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid project ID"));
-            employee.setProject(project);
-        } else {
-            employee.setProject(null);
-        }
-
-        if (employeeDTO.getManagerId() != null) {
-            Manager manager = managerRepository.findById(employeeDTO.getManagerId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
-            employee.setManager(manager);
-        } else {
-            employee.setManager(null);
-        }
-
-        employee.setSkills(employeeDTO.getSkills());
-
-        employeeRepository.save(employee);
-        return employee;
-        
-	
-    }
+//	@Override
+//	public Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO) {
+//		
+//		Employee employee = employeeRepository.findById(employeeId)
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
+//
+//       
+//        employee.setFullName(employeeDTO.getFullName());
+//
+//        if (employeeDTO.getProjectId() != null) {
+//            Project project = projectRepository.findById(employeeDTO.getProjectId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Invalid project ID"));
+//            employee.setProject(project);
+//        } else {
+//            employee.setProject(null);
+//        }
+//
+//        if (employeeDTO.getManagerId() != null) {
+//            Manager manager = managerRepository.findById(employeeDTO.getManagerId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Invalid manager ID"));
+//            employee.setManager(manager);
+//        } else {
+//            employee.setManager(null);
+//        }
+//
+//        employee.setSkills(employeeDTO.getSkills());
+//
+//        employeeRepository.save(employee);
+//        return employee;
+//        
+//	
+//    }
 //		Optional<Employee> employee = employeeRepository.findById(employeeId);
 //        if (!employee.isPresent()) {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
@@ -120,59 +111,78 @@ public class EmployeeServiceIMPL implements EmployeeService {
 //    }
 
 
-	@Override
-	public void deleteEmployee(Long employeeId) {
-		employeeRepository.deleteById(employeeId);
-		
-	}
+//	@Override
+//	public void deleteEmployee(Long employeeId) {
+//		employeeRepository.deleteById(employeeId);
+//	}
 
-	@Override
-	public Optional<Employee> getEmployeeById(Long employeeId) {
-		Optional<Employee> employee = employeeRepository.findByEmployeeId(employeeId);
-		return employee;
-	}
+
 
 	@Override
 	public List<Employee> getAllEmployees() {
-		List<Employee> employeeList = employeeRepository.findAll();
-		return employeeList;
+		try {
+			List<Employee> employeeList = employeeRepository.findAll();
+			return employeeList;
+		}catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }	
 	}
 
 @Override
 public Employee updateSkills(Principal principal, List<String> skills) {
-	String email = principal.getName();
-    User user = userRepository.findByUserEmail(email);
-    if (user == null) {
-        throw new IllegalArgumentException("User not found");
-    }
+	try {
+		String email = principal.getName();
+	    User user = userRepository.findByUserEmail(email);
+	    if (user == null) {
+	        throw new ResourceNotFoundException("User not found");
+	    }
 
-    Employee employee = employeeRepository.findByUser(user);
-    if (employee == null) {
-        throw new IllegalArgumentException("Employee not found");
-    }
-    
-    Set<String> skillSet = new HashSet<>(skills);
-    
-    employee.setSkills(skillSet);
+	    Employee employee = employeeRepository.findByUser(user);
+	    if (employee == null) {
+	        throw new ResourceNotFoundException("Employee not found");
+	    }
+	    
+	    Set<String> skillSet = new HashSet<>(skills);
+	    
+	    employee.setSkills(skillSet);
 
-    return employeeRepository.save(employee);
+	    return employeeRepository.save(employee);
+		
+	}catch (ResourceNotFoundException ex) {
+        logger.error("ResourceNotFoundException: {}", ex.getMessage());
+        throw ex;
+    } catch (Exception ex) {
+        logger.error("Exception: {}", ex.getMessage());
+        throw new RuntimeException("Internal Server Error");
+    }
+	
 }
 
 @Override
 public Employee getEmployeeInfo(Principal principal) {
-	
-    String email = principal.getName();
-    User user = userRepository.findByUserEmail(email);
-    if (user == null) {
-        throw new IllegalArgumentException("User not found");
-    }
+	try {
+		String email = principal.getName();
+	    User user = userRepository.findByUserEmail(email);
+	    if (user == null) {
+	        throw new ResourceNotFoundException("User not found");
+	    }
 
-    Employee employee = employeeRepository.findByUser(user);
-    if (employee == null) {
-        throw new IllegalArgumentException("Employee not found");
-    }
+	    Employee employee = employeeRepository.findByUser(user);
+	    if (employee == null) {
+	        throw new ResourceNotFoundException("Employee not found");
+	    }
 
-    return employee;
+	    return employee;
+		
+	}catch (ResourceNotFoundException ex) {
+        logger.error("ResourceNotFoundException: {}", ex.getMessage());
+        throw ex;
+    } catch (Exception ex) {
+        logger.error("Exception: {}", ex.getMessage());
+        throw new RuntimeException("Internal Server Error");
+    }
+    
 }
 }
 

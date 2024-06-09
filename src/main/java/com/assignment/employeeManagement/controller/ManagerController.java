@@ -44,61 +44,105 @@ public class ManagerController {
 	}
 	
 	@GetMapping("/manager")
-	public List<Manager> getAllManager(){
+	public ResponseEntity<List<Manager>> getAllManager(){
 		logger.info("API hit: /api/manager/manager method:GET");
-		return managerService.getAllManagers();
+//		try {
+			List<Manager> managerList = managerService.getAllManagers();
+			return ResponseEntity.status(200).body(managerList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	//All projects list
 	@GetMapping("/project")
-	public List<Project> getAllProject(){
+	public ResponseEntity<List<Project>> getAllProject(){
 		logger.info("API hit: /api/manager/project method:GET");
-		return managerService.getAllProjects();
+		
+//		try {
+			List<Project> projectList =  managerService.getAllProjects();
+			return ResponseEntity.status(200).body(projectList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	//Filter unassigned employees
 	@GetMapping("/employee/unassigned")
-	public List<Employee> getUnassignedEmployees(){
+	public ResponseEntity<List<Employee>> getUnassignedEmployees(){
 		logger.info("API hit: /api/manager/employee/unassigned method:GET");
-		return managerService.getUnassignedEmployees();
+//		try {
+			List<Employee> employeeList =  managerService.getUnassignedEmployees();
+			return ResponseEntity.status(200).body(employeeList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	//Filter employee based on skills
 	@GetMapping("/employee/filter")
-	public List<Employee> filterAllEmployeesBySkills(@RequestParam List<String> skills){
+	public ResponseEntity<List<Employee>> filterAllEmployeesBySkills(@RequestParam List<String> skills){
 		logger.info("API hit: /api/manager/employee/filter method:GET");
-		return managerService.filterEmployeesBySkills(skills);
+//		try {
+			List<Employee> employeeList =  managerService.filterEmployeesBySkills(skills);
+			return ResponseEntity.status(200).body(employeeList);
+//		}catch(Exception e) {
+//				return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	@PostMapping("/request/employees")
     public ResponseEntity<Request> requestEmployeesForProject(@RequestBody RequestDTO requestDTO) {
 		logger.info("API hit: /api/manager/employee method:POST body: "+requestDTO);
-        Request request = managerService.requestEmployeesForProject(requestDTO);
-        return ResponseEntity.ok(request);
+//		try {
+			Request request = managerService.requestEmployeesForProject(requestDTO);
+			return ResponseEntity.status(200).body(request);
+//		}catch(Exception e) {
+//				return ResponseEntity.badRequest().body(null);
+//			}
     }
 	
 	@GetMapping("/info")
-	public ManagerInfoDTO getManagerInfo(Principal principal) {
+	public ResponseEntity<ManagerInfoDTO> getManagerInfo(Principal principal) {
 		logger.info("API hit: /api/manager/info method:GET");
-		ManagerInfoDTO manager = managerService.getManagerInfo(principal);
-		return manager;
+//		try {
+			ManagerInfoDTO manager = managerService.getManagerInfo(principal);
+			return ResponseEntity.status(200).body(manager);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	@GetMapping("/employee/project/{projectId}")
-	public List<Employee> getEmployeeListByProjectId(@PathVariable Long projectId){
+	public ResponseEntity<List<Employee>> getEmployeeListByProjectId(@PathVariable Long projectId){
 		logger.info("API hit: /api/manager/employee/project/{projectId} method:GET");
-		List<Employee> employeeList = managerService.getAllEmployeeByProject(projectId);
-		return employeeList;
+//		try {
+			List<Employee> employeeList = managerService.getAllEmployeeByProject(projectId);
+			return ResponseEntity.status(200).body(employeeList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	@GetMapping("/request/manager/{managerId}")
-	public List<Request> getRequestByManagerId(@PathVariable Long managerId){
-		List<Request> requestList = managerService.getAllRequestByManager(managerId);
-		return requestList;
+	public ResponseEntity<List<Request>> getRequestByManagerId(@PathVariable Long managerId){
+		logger.info("API hit: /api/manager/request/manager/{managerId} method:GET");
+//		try {
+			List<Request> requestList = managerService.getAllRequestByManager(managerId);
+			return ResponseEntity.status(200).body(requestList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	@GetMapping("/employee/team")
-	public List<Employee> getMyEmployee(Principal principal){
-		return managerService.getAllEmployeeByManager(principal);
+	public ResponseEntity<List<Employee>> getMyEmployee(Principal principal){
+		logger.info("API hit: /api/manager/employee/team method:GET");
+//		try {
+			List<Employee> employeeList = managerService.getAllEmployeeByManager(principal);
+			return ResponseEntity.status(200).body(employeeList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 }

@@ -24,4 +24,5 @@ public interface AdminService {
 	    Request rejectRequest(Long requestId);
 	    void deleteEmployee(Long employeeId);
 	    Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO);
+		Employee getEmployeeById(Long employeeId);
 }

@@ -17,6 +17,9 @@ import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
+import com.assignment.employeeManagement.exception.EmployeeAlreadyAssignedException;
+import com.assignment.employeeManagement.exception.ManagerAlreadyAssignedException;
+import com.assignment.employeeManagement.exception.ResourceNotFoundException;
 import com.assignment.employeeManagement.model.RequestStatus;
 import com.assignment.employeeManagement.model.RequestType;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
@@ -28,7 +31,7 @@ import com.assignment.employeeManagement.repository.UserLoginRepo;
 @Service
 public class AdminServiceIMPL implements AdminService{
 
-	private static final Logger logger = LogManager.getLogger(AdminController.class);
+	private static final Logger logger = LogManager.getLogger(AdminServiceIMPL.class);
 	
 	@Autowired
 	private EmployeeRepository employeeRepository;
@@ -45,52 +48,68 @@ public class AdminServiceIMPL implements AdminService{
 	@Autowired
 	private RequestRepository requestRepository;
 	
+	@Autowired
+	private EmployeeService employeeService;
 	
+	@Autowired
+	private ManagerService managerService;
 	
 	@Override
 	public Employee addEmployee(EmployeeDTO employeeDTO) {
-		int userId = employeeDTO.getUserId();
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
 		
-	    Long managerId = employeeDTO.getManagerId();
-	    Manager manager = null;
-	    if (managerId != null) {
-	        manager = managerRepository.findById(managerId)
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
-	    }
+		try {
+			int userId = employeeDTO.getUserId();
+			User user = userRepository.findById(userId)
+					.orElseThrow(() -> new ResourceNotFoundException("No user found with user id: " + userId));
+			
+		    Long managerId = employeeDTO.getManagerId();
+		    Manager manager = null;
+		    if (managerId != null) {
+		        manager = managerRepository.findById(managerId)
+		                .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager ID: "+managerId));
+		    }
 
-	    Long projectId = employeeDTO.getProjectId();
-	    Project project = null;
-	    if (projectId != null) {
-	        project = projectRepository.findById(projectId)
-	                .orElseThrow(() -> new IllegalArgumentException("Invalid project ID"));
-	    }
+		    Long projectId = employeeDTO.getProjectId();
+		    Project project = null;
+		    if (projectId != null) {
+		        project = projectRepository.findById(projectId)
+		                .orElseThrow(() -> new ResourceNotFoundException("No project found with project ID: "+projectId));
+		    }
+			
+	        
+	        Employee employee = new Employee(
+					employeeDTO.getEmployeeId(),
+					user,
+					employeeDTO.getFullName(),
+					project,
+					manager,
+					employeeDTO.getSkills()
+					);
+			
+			employeeRepository.save(employee);
+			return employee;
+			
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 		
-        
-        Employee employee = new Employee(
-				employeeDTO.getEmployeeId(),
-				user,
-				employeeDTO.getFullName(),
-				project,
-				manager,
-				employeeDTO.getSkills()
-				);
 		
-		employeeRepository.save(employee);
-		return employee;
 	}
 
 	
 	
 	@Override
-	public Project addProject(ProjectDTO projectDTO)
-	{
+	public Project addProject(ProjectDTO projectDTO){
+	try {
 		Long managerId = projectDTO.getManagerId();
 		Manager manager = null;
 		if(managerId!=null) {
 			manager = managerRepository.findById(managerId)
-			.orElseThrow(()->new IllegalArgumentException("Invalid manager Id"));
+			.orElseThrow(()->new ResourceNotFoundException("No Manager found with manager Id: "+managerId));
 		}
 		
 		Project project = new Project(
@@ -99,81 +118,98 @@ public class AdminServiceIMPL implements AdminService{
 				manager
 				);
 		
-		return projectRepository.save(project);
+		return projectRepository.save(project);		
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
 	@Override
 	public List<Employee> getAllEmployees() {
-		List<Employee> employeeList = employeeRepository.findAll();
-		return employeeList;
+
+		return employeeService.getAllEmployees();
+
 	}
 
 	@Override
 	public List<Project> getAllProjects() {
-		List<Project> projectList = projectRepository.findAll();
-		return projectList;
+		return managerService.getAllProjects();
+
 	}
 
 	@Override
 	public Employee assignProjectToEmployee(Long employeeId, Long projectId) {
+	try {
 		Employee employee = employeeRepository.findById(employeeId)
-				.orElseThrow(()->new IllegalArgumentException("Invalid Employee ID"));
+				.orElseThrow(()->new ResourceNotFoundException("No employee found with Employee ID: "+employeeId));
 		
 		Project project = projectRepository.findById(projectId)
-				.orElseThrow(()-> new IllegalArgumentException("Inavlid Project Id"));
+				.orElseThrow(()-> new ResourceNotFoundException("No project found with Project Id: "+projectId));
+		if(employee.getProject()!=null) {
+			throw new EmployeeAlreadyAssignedException("Employee is already assigned to a project");
+		}else {
+			employee.setProject(project);
+			employee.setManager(project.getManager());
+			return employeeRepository.save(employee);	
+		}
+
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 		
-		
-		employee.setProject(project);
-		employee.setManager(project.getManager());
-		return employeeRepository.save(employee);
 	}
 
 	@Override
 	public Employee unassignProjectFromEmployee(Long employeeId) {
+	try {
 		Employee employee = employeeRepository.findById(employeeId)
-				.orElseThrow(()->new IllegalArgumentException("Invalid Employee ID"));
+				.orElseThrow(()->new ResourceNotFoundException("No Employee found with Employee ID: "+employeeId));
 		employee.setProject(null);
 		employee.setManager(null);	
-		return employeeRepository.save(employee);
+		return employeeRepository.save(employee);		
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
 	@Override
 	public Request approveRequest(Long requestId) {
+	try {
 		Request request = requestRepository.findById(requestId)
-				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
+				.orElseThrow(()-> new ResourceNotFoundException("No request found with Request Id: "+requestId));
 		if(request.getRequestType()==RequestType.ASSIGN_EMPLOYEE) {
 			int len = request.getEmployeeIds().size();
 			for(int i=0; i<len; i++) {
-				Employee employee = employeeRepository.findById(request.getEmployeeIds().get(i))
-						.orElseThrow(()-> new IllegalArgumentException("Employee not found"));
-				System.out.println(employee);
-//				Project project = projectRepository.findById(request.getProjectId())
-//						.orElseThrow(()-> new IllegalArgumentException("No Such Project Exist"));
-//				
-//				 if (employee.getProject() != null && employee.getProject().getProjectId().equals(project.getProjectId())) {
-//		                System.out.println("Employee " + employee.getEmployeeId() + " is already assigned to project " + project.getProjectId());
-//		            }
-//				 else{
-				//employee.setProject(this.assignProjectToEmployee(requestId, requestId));
-				
-				employee.setManager(request.getRequester());
-				System.out.println(employee);
-//				 try {
-	                    employeeRepository.save(employee);
-	                    
-	                  this.assignProjectToEmployee(employee.getEmployeeId(), request.getProjectId());
-	                   
-//	                } catch (org.springframework.dao.DataIntegrityViolationException e) {
-//	                    System.err.println("DataIntegrityViolationException: " + e.getMessage());
-//	                    throw new RuntimeException("Could not assign project to employee due to unique constraint violation.");
-//	                }
-		         }
+				Long employeeId = request.getEmployeeIds().get(i);
+				Employee employee = employeeRepository.findById(employeeId)
+						.orElseThrow(()-> new ResourceNotFoundException("Employee not found with Id: "+ employeeId));	
+				if(employee.getManager()==null && employee.getProject()==null) {
+					this.assignProjectToEmployee(employee.getEmployeeId(), request.getProjectId());
+				}else {
+					request.setStatus(RequestStatus.REJECT);
+					throw new EmployeeAlreadyAssignedException("Employee is already assigned to a manager or project");
+				}
+	            employeeRepository.save(employee);         
+ }
 			
 		}else {
 			int len = request.getEmployeeIds().size();
 			for(int i=0; i<len; i++) {
-				Employee employee = employeeRepository.findById(request.getEmployeeIds().get(i))
-						.orElseThrow(()-> new IllegalArgumentException("Employee not found"));
+				Long employeeId = request.getEmployeeIds().get(i);
+				Employee employee = employeeRepository.findById(employeeId)
+						.orElseThrow(()-> new ResourceNotFoundException("Employee not found with Id: "+ employeeId));
 				employee.setManager(null);
 				employee.setProject(null);
 				employeeRepository.save(employee);
@@ -181,50 +217,78 @@ public class AdminServiceIMPL implements AdminService{
 		}
 		request.setStatus(RequestStatus.APPROVED);
 		return requestRepository.save(request);
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
+		
 		
 	}
 
 	@Override
 	public Request rejectRequest(Long requestId) {
+	try {
 		Request request = requestRepository.findById(requestId)
-				.orElseThrow(()-> new IllegalArgumentException("Invalid Request Id"));
+				.orElseThrow(()-> new ResourceNotFoundException("No request found with Request Id: "+requestId));
 		request.setStatus(RequestStatus.REJECT);
-		return requestRepository.save(request);
-		
+		return requestRepository.save(request);		
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
 	@Override
 	public void deleteEmployee(Long employeeId) {
+	try {
 		Employee employee = employeeRepository.findById(employeeId)
-				.orElseThrow(()->new IllegalArgumentException("UserId doesnot exist"));
-		
+				.orElseThrow(()->new ResourceNotFoundException("Employee not found with employee id: "+employeeId));
 		employeeRepository.deleteById(employeeId);
-		userRepository.deleteById(employee.getUser().getUserId());
-		
+		userRepository.deleteById(employee.getUser().getUserId());		
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
+	
+	@Override
+	public Employee getEmployeeById(Long employeeId) {
+		Employee employee = employeeRepository.findByEmployeeId(employeeId)
+				.orElseThrow(()-> new ResourceNotFoundException("Employee not found"));
+		return employee;
+	}
+	
 	@Override
 	public Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO) {
+	try {
 		Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
-
-//        User user = userRepository.findById(employeeDTO.getUserId())
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-//
-//        employee.setUser(user);
-        employee.setFullName(employeeDTO.getFullName());
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employee id: "+employeeId));	
+		employee.setFullName(employeeDTO.getFullName());
 
         if (employeeDTO.getProjectId() != null) {
             Project project = projectRepository.findById(employeeDTO.getProjectId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid project ID"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with project Id: "+employeeDTO.getProjectId()));
             employee.setProject(project);
+            Manager manager = managerRepository.findById(employeeDTO.getManagerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager Id: "+employeeDTO.getManagerId()));
+            employee.setManager(manager);
         } else {
             employee.setProject(null);
         }
 
-        if (employeeDTO.getManagerId() != null) {
+        if (employeeDTO.getManagerId() != null && employee.getProject()==null) {
             Manager manager = managerRepository.findById(employeeDTO.getManagerId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
+                    .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager Id: "+employeeDTO.getManagerId()));
             employee.setManager(manager);
         } else {
             employee.setManager(null);
@@ -233,34 +297,53 @@ public class AdminServiceIMPL implements AdminService{
         employee.setSkills(employeeDTO.getSkills());
 
         employeeRepository.save(employee);
-        return employee;
+        return employee;	
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
+        
 	}
 
 
 
 	@Override
 	public List<Request> getAllRequest() {
+	try {
 		List<Request> requestList = requestRepository.findAll();
 		return requestList;
+		} catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
 
 
 	@Override
 	public Manager addmanager(ManagerDTO managerDTO) {
+	try {
 		Manager manager = new Manager();
 		manager.setUser(userRepository.findById(managerDTO.getUserId())
-				.orElseThrow(()->new IllegalArgumentException("use not found")));
+				.orElseThrow(()->new ResourceNotFoundException("No user found with user id: "+managerDTO.getUserId())));
 		return managerRepository.save(manager);
+		}catch (ResourceNotFoundException ex) {
+            logger.error("ResourceNotFoundException: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Exception: {}", ex.getMessage());
+            throw new RuntimeException("Internal Server Error");
+        }
 	}
 
 
 
 	@Override
 	public List<Manager> getAllManager() {
-		List<Manager> managerList = managerRepository.findAll();
-		return managerList;
-	}
+		return managerService.getAllManagers();
 
-	
+	}
 }

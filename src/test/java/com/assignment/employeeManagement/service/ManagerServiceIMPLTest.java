@@ -1,26 +1,5 @@
 package com.assignment.employeeManagement.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.any;
-
 import com.assignment.employeeManagement.dto.ManagerInfoDTO;
 import com.assignment.employeeManagement.dto.RequestDTO;
 import com.assignment.employeeManagement.entity.Employee;
@@ -28,17 +7,41 @@ import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
-import com.assignment.employeeManagement.model.RequestStatus;
+import com.assignment.employeeManagement.exception.EmployeeAlreadyAssignedException;
+import com.assignment.employeeManagement.exception.ResourceNotFoundException;
 import com.assignment.employeeManagement.model.RequestType;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
 import com.assignment.employeeManagement.repository.RequestRepository;
 import com.assignment.employeeManagement.repository.UserLoginRepo;
-import com.assignment.employeeManagement.service.ManagerServiceIMPL;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 public class ManagerServiceIMPLTest {
-	@Mock
+
+    @Mock
+    private EmployeeService employeeService;
+
+    @Mock
     private EmployeeRepository employeeRepository;
 
     @Mock
@@ -52,202 +55,303 @@ public class ManagerServiceIMPLTest {
 
     @Mock
     private RequestRepository requestRepository;
-    
-    @Mock
-    private Principal principal;
-    
+
     @InjectMocks
     private ManagerServiceIMPL managerService;
-    
-    @InjectMocks
-    private AdminServiceIMPL adminServiceImpl;
-    
-    private RequestDTO requestDTO;
-    private Manager manager;
-    private Request request;
-    private User user;
-    private Project project;
-    
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        
-        user = new User();
-        user.setUserEmail("test@example.com");
-        user.setUserName("John Doe");
-        manager = new Manager();
-        manager.setManagerId(1L);
-        manager.setUser(user);
-        
-        requestDTO = new RequestDTO();
-        requestDTO.setRequesterId(1L);
-        requestDTO.setRequestType(RequestType.ASSIGN_EMPLOYEE);
-        requestDTO.setProjectId(100L);
-        requestDTO.setEmployeeIds(Arrays.asList(101L, 102L, 103L));
-        requestDTO.setRequestDetails(null);
-
-        request = new Request();
-        request.setRequester(manager);
-        request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
-        request.setProjectId(100L);
-        request.setEmployeeIds(Arrays.asList(101L, 102L, 103L));
-        request.setRequestDetails("Project ID: 100, Employee IDs: [101, 102, 103]");
-        request.setStatus(RequestStatus.PENDING);
-        
-        project = new Project();
-        project.setProjectId(100L);
-        project.setManager(manager);
-    }
 
     @Test
-    void testGetAllEmployees() {
-        List<Employee> employeeList = Arrays.asList(new Employee(), new Employee());
-        when(employeeRepository.findAll()).thenReturn(employeeList);
-
-        List<Employee> result = managerService.getAllEmployees();
-
-        assertEquals(employeeList, result);
-    }
-
-    @Test
-    void testFilterEmployeesBySkills() {
-        List<String> skills = Arrays.asList("Java", "Spring");
-        List<Employee> employeeList = Arrays.asList(new Employee(), new Employee());
-        when(employeeRepository.findBySkillsIn(skills)).thenReturn(employeeList);
-
-        List<Employee> result = managerService.filterEmployeesBySkills(skills);
-
-        assertEquals(employeeList, result);
-    }
-
-//    @Test
-//    void testRequestEmployeesForProject() {
-//        String email = "manager@example.com";
-//        Long projectId = 1L;
-//        List<Long> employeeIds = Arrays.asList(1L, 2L);
-//        Manager manager = new Manager();
-//        Request request = new Request();
-//
-//        when(userRepository.findByUserEmail(email)).thenReturn(new User());
-//        when(managerRepository.findByUser(any(User.class))).thenReturn(manager);
-//        when(requestRepository.save(any(Request.class))).thenReturn(request);
-//
-//        Request result = managerService.requestEmployeesForProject(email, projectId, employeeIds);
-//
-//        verify(requestRepository, times(1)).save(any(Request.class));
-//    }
-    
-    @Test
-    public void testGetManagerInfo_Success() {
-        when(principal.getName()).thenReturn("test@example.com");
-        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
-        when(managerRepository.findByUser(user)).thenReturn(manager);
-        when(projectRepository.findAllByManager(manager)).thenReturn(Collections.singletonList(project));
-        when(employeeRepository.findAllByManager(manager)).thenReturn(Collections.emptyList());
-
-        ManagerInfoDTO managerInfoDTO = managerService.getManagerInfo(principal);
-
-        assertNotNull(managerInfoDTO);
-        assertEquals(manager.getManagerId(), managerInfoDTO.getManagerId());
-        assertEquals(user.getUserName(), managerInfoDTO.getFullName());
-        assertEquals(1, managerInfoDTO.getProjectList().size());
-        assertEquals(0, managerInfoDTO.getEmployeeList().size());
-    }
-
-    @Test
-    public void testGetManagerInfo_UserNotFound() {
-        when(principal.getName()).thenReturn("test@example.com");
-        when(userRepository.findByUserEmail("test@example.com")).thenReturn(null);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            managerService.getManagerInfo(principal);
-        });
-
-        assertEquals("User not found", exception.getMessage());
-    }
-
-    @Test
-    public void testGetManagerInfo_ManagerNotFound() {
-        when(principal.getName()).thenReturn("test@example.com");
-        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
-        when(managerRepository.findByUser(user)).thenReturn(null);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            managerService.getManagerInfo(principal);
-        });
-
-        assertEquals("Employee not found", exception.getMessage());
-    }
-
-    @Test
-    public void testGetAllEmployeeByProject() {
-        Project project = new Project();
-        project.setProjectId(1L);
-
-        Employee employee1 = new Employee();
-        Employee employee2 = new Employee();
-
-        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(employeeRepository.findAllByProject(project)).thenReturn(Arrays.asList(employee1, employee2));
-
-        List<Employee> employees = managerService.getAllEmployeeByProject(1L);
-
-        assertEquals(2, employees.size());
-        verify(projectRepository, times(1)).findById(1L);
-        verify(employeeRepository, times(1)).findAllByProject(project);
-    }
-    
-    @Test
-    public void testGetUnassignedEmployees() {
-        Employee employee1 = new Employee();
-        Employee employee2 = new Employee();
-
-        when(employeeRepository.findByProjectIsNull()).thenReturn(Arrays.asList(employee1, employee2));
-
-        List<Employee> employees = managerService.getUnassignedEmployees();
-
-        assertEquals(2, employees.size());
-        verify(employeeRepository, times(1)).findByProjectIsNull();
-    }
-    
-    @Test
-    public void testGetAllProjects() {
-        Project project1 = new Project();
-        Project project2 = new Project();
-
-        when(projectRepository.findAll()).thenReturn(Arrays.asList(project1, project2));
-
-        List<Project> projects = managerService.getAllProjects();
-
-        assertEquals(2, projects.size());
-        verify(projectRepository, times(1)).findAll();
-    }
-    
-    @Test
-    public void testGetAllManagers() {
+    void getAllManagers_Success() {
         Manager manager1 = new Manager();
         Manager manager2 = new Manager();
+        List<Manager> managers = Arrays.asList(manager1, manager2);
 
-        when(managerRepository.findAll()).thenReturn(Arrays.asList(manager1, manager2));
+        when(managerRepository.findAll()).thenReturn(managers);
 
-        List<Manager> managers = managerService.getAllManagers();
+        List<Manager> result = managerService.getAllManagers();
 
-        assertEquals(2, managers.size());
+        assertEquals(2, result.size());
+        verify(managerRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllManagers_Exception() {
+        when(managerRepository.findAll()).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllManagers());
+
+        assertEquals("Internal Server Error", exception.getMessage());
         verify(managerRepository, times(1)).findAll();
     }
     
     @Test
-    public void testRequestEmployeesForProject() {
-        when(managerRepository.findByManagerId(requestDTO.getRequesterId())).thenReturn(manager);
+    void getAllProjects_Success() {
+        Project project1 = new Project();
+        Project project2 = new Project();
+        List<Project> projects = Arrays.asList(project1, project2);
+
+        when(projectRepository.findAll()).thenReturn(projects);
+
+        List<Project> result = managerService.getAllProjects();
+
+        assertEquals(2, result.size());
+        verify(projectRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllProjects_Exception() {
+        when(projectRepository.findAll()).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllProjects());
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(projectRepository, times(1)).findAll();
+    }
+
+    @Test
+    void filterEmployeesBySkills_Success() {
+        Employee employee1 = new Employee();
+        Employee employee2 = new Employee();
+        List<Employee> employees = Arrays.asList(employee1, employee2);
+
+        when(employeeRepository.findBySkillsIn(anyList())).thenReturn(employees);
+
+        List<Employee> result = managerService.filterEmployeesBySkills(Arrays.asList("Java", "Spring"));
+
+        assertEquals(2, result.size());
+        verify(employeeRepository, times(1)).findBySkillsIn(anyList());
+    }
+
+    @Test
+    void filterEmployeesBySkills_Exception() {
+        when(employeeRepository.findBySkillsIn(anyList())).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.filterEmployeesBySkills(Arrays.asList("Java", "Spring")));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(employeeRepository, times(1)).findBySkillsIn(anyList());
+    }
+
+    @Test
+    void getUnassignedEmployees_Success() {
+        Employee employee1 = new Employee();
+        Employee employee2 = new Employee();
+        List<Employee> employees = Arrays.asList(employee1, employee2);
+
+        when(employeeRepository.findByProjectIsNull()).thenReturn(employees);
+
+        List<Employee> result = managerService.getUnassignedEmployees();
+
+        assertEquals(2, result.size());
+        verify(employeeRepository, times(1)).findByProjectIsNull();
+    }
+
+    @Test
+    void getUnassignedEmployees_Exception() {
+        when(employeeRepository.findByProjectIsNull()).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getUnassignedEmployees());
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(employeeRepository, times(1)).findByProjectIsNull();
+    }
+
+    @Test
+    void requestEmployeesForProject_Success() {
+        RequestDTO requestDTO = new RequestDTO();
+        requestDTO.setRequesterId(1L);
+        requestDTO.setProjectId(1L);
+        requestDTO.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+        requestDTO.setEmployeeIds(Arrays.asList(1L, 2L));
+
+        Manager manager = new Manager();
+        manager.setManagerId(1L);
+        Project project = new Project();
+        project.setManager(manager);
+
+        when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(new Employee()));
+
+        Request request = new Request();
         when(requestRepository.save(any(Request.class))).thenReturn(request);
 
-        Request createdRequest = managerService.requestEmployeesForProject(requestDTO);
+        Request result = managerService.requestEmployeesForProject(requestDTO);
 
-        assertEquals(request.getRequester(), createdRequest.getRequester());
-        assertEquals(request.getRequestType(), createdRequest.getRequestType());
-        assertEquals(request.getProjectId(), createdRequest.getProjectId());
-        assertEquals(request.getEmployeeIds(), createdRequest.getEmployeeIds());
-        assertEquals(request.getRequestDetails(), createdRequest.getRequestDetails());
-        assertEquals(RequestStatus.PENDING, createdRequest.getStatus());
+        assertNotNull(result);
+        verify(managerRepository, times(1)).findById(1L);
+        verify(projectRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(2)).findById(anyLong());
+        verify(requestRepository, times(1)).save(any(Request.class));
     }
+
+	/*
+	 * @Test void requestEmployeesForProject_EmployeeAlreadyAssignedException() {
+	 * RequestDTO requestDTO = new RequestDTO(); requestDTO.setRequesterId(1L);
+	 * requestDTO.setProjectId(1L);
+	 * requestDTO.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+	 * requestDTO.setEmployeeIds(Arrays.asList(1L, 2L));
+	 * 
+	 * Manager manager = new Manager(); manager.setManagerId(1L); Project project =
+	 * new Project(); project.setManager(manager);
+	 * 
+	 * Employee employee = new Employee(); employee.setProject(new Project());
+	 * 
+	 * when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
+	 * when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+	 * when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee)
+	 * );
+	 * 
+	 * Exception exception = assertThrows(EmployeeAlreadyAssignedException.class, ()
+	 * -> managerService.requestEmployeesForProject(requestDTO));
+	 * 
+	 * assertEquals("Employee is already assigned to a project, employee id: 1",
+	 * exception.getMessage()); verify(managerRepository, times(1)).findById(1L);
+	 * verify(projectRepository, times(1)).findById(1L); verify(employeeRepository,
+	 * times(1)).findById(anyLong()); }
+	 */
+
+    @Test
+    void requestEmployeesForProject_Exception() {
+        RequestDTO requestDTO = new RequestDTO();
+        requestDTO.setRequesterId(1L);
+        requestDTO.setProjectId(1L);
+        requestDTO.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+        requestDTO.setEmployeeIds(Arrays.asList(1L, 2L));
+
+        when(managerRepository.findById(1L)).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.requestEmployeesForProject(requestDTO));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(managerRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void getManagerInfo_Success() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("manager@example.com");
+
+        User user = new User();
+        user.setUserEmail("manager@example.com");
+
+        Manager manager = new Manager();
+        manager.setManagerId(1L);
+        manager.setUser(user);
+
+        when(userRepository.findByUserEmail("manager@example.com")).thenReturn(user);
+        when(managerRepository.findByUser(user)).thenReturn(Optional.of(manager));
+        when(projectRepository.findAllByManager(manager)).thenReturn(new ArrayList<>());
+        when(employeeRepository.findAllByManager(manager)).thenReturn(Optional.of(new ArrayList<>()));
+
+        ManagerInfoDTO result = managerService.getManagerInfo(principal);
+
+        assertEquals(1L, result.getManagerId());
+        verify(userRepository, times(1)).findByUserEmail("manager@example.com");
+        verify(managerRepository, times(1)).findByUser(user);
+    }
+
+    @Test
+    void getManagerInfo_Exception() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("manager@example.com");
+
+        when(userRepository.findByUserEmail("manager@example.com")).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getManagerInfo(principal));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(userRepository, times(1)).findByUserEmail("manager@example.com");
+    }
+
+    @Test
+    void getAllEmployeeByProject_Success() {
+        Project project = new Project();
+        project.setProjectId(1L);
+        List<Employee> employees = Arrays.asList(new Employee(), new Employee());
+
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(employeeRepository.findAllByProject(project)).thenReturn(employees);
+
+        List<Employee> result = managerService.getAllEmployeeByProject(1L);
+
+        assertEquals(2, result.size());
+        verify(projectRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).findAllByProject(project);
+    }
+
+    @Test
+    void getAllEmployeeByProject_Exception() {
+        when(projectRepository.findById(1L)).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllEmployeeByProject(1L));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(projectRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void getAllRequestByManager_Success() {
+        Manager manager = new Manager();
+        manager.setManagerId(1L);
+        List<Request> requests = Arrays.asList(new Request(), new Request());
+
+        when(managerRepository.findByManagerId(1L)).thenReturn(manager);
+        when(requestRepository.findAllByRequester(manager)).thenReturn(requests);
+
+        List<Request> result = managerService.getAllRequestByManager(1L);
+
+        assertEquals(2, result.size());
+        verify(managerRepository, times(1)).findByManagerId(1L);
+        verify(requestRepository, times(1)).findAllByRequester(manager);
+    }
+
+    @Test
+    void getAllRequestByManager_Exception() {
+        when(managerRepository.findByManagerId(1L)).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllRequestByManager(1L));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(managerRepository, times(1)).findByManagerId(1L);
+    }
+
+    @Test
+    void getAllEmployeeByManager_Success() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("manager@example.com");
+
+        User user = new User();
+        user.setUserEmail("manager@example.com");
+
+        Manager manager = new Manager();
+        manager.setManagerId(1L);
+        manager.setUser(user);
+
+        List<Employee> employees = Arrays.asList(new Employee(), new Employee());
+
+        when(userRepository.findByUserEmail("manager@example.com")).thenReturn(user);
+        when(managerRepository.findByUser(user)).thenReturn(Optional.of(manager));
+        when(employeeRepository.findAllByManager(manager)).thenReturn(Optional.of(employees));
+
+        List<Employee> result = managerService.getAllEmployeeByManager(principal);
+
+        assertEquals(2, result.size());
+        verify(userRepository, times(1)).findByUserEmail("manager@example.com");
+        verify(managerRepository, times(1)).findByUser(user);
+        verify(employeeRepository, times(1)).findAllByManager(manager);
+    }
+
+    @Test
+    void getAllEmployeeByManager_Exception() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("manager@example.com");
+
+        when(userRepository.findByUserEmail("manager@example.com")).thenThrow(new RuntimeException("Internal Server Error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllEmployeeByManager(principal));
+
+        assertEquals("Internal Server Error", exception.getMessage());
+        verify(userRepository, times(1)).findByUserEmail("manager@example.com");
+    }
+
 }

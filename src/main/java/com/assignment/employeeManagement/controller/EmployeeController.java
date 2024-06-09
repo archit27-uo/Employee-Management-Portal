@@ -32,61 +32,51 @@ public class EmployeeController {
 	@Autowired
 	private EmployeeService employeeService;
 	
-//	@PostMapping("/employee")
-//	public Employee addEmployee(@RequestBody EmployeeDTO employeeDTO) {
-//		Employee employee = employeeService.addEmployee(employeeDTO);
-//		return employee;
-//	}
-//	
 	@GetMapping("/all")
-	public List<Employee> fetchAllEmployee(){
+	public ResponseEntity<List<Employee>> fetchAllEmployee(){
 		logger.info("API hit: /api/employee/all method:GET");
-		List<Employee> employeeList = employeeService.getAllEmployees();
-		return employeeList;
+//		try {
+			List<Employee> employeeList = employeeService.getAllEmployees();
+			return ResponseEntity.status(200).body(employeeList);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	
 	@PutMapping("/skills")
-	public Employee updateSkills(Principal principal, @RequestBody List<String> skills)
-	{
+	public ResponseEntity<Employee> updateSkills(Principal principal, @RequestBody List<String> skills){
 		logger.info("API hit: /api/employee/skills method:PUT body: "+skills);
-		Employee employee = employeeService.updateSkills(principal, skills);
-		return employee;
+//		try {
+			Employee employee = employeeService.updateSkills(principal, skills);
+			return ResponseEntity.status(200).body(employee);
+//		}catch(Exception e) {
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
 	
 	
 	@GetMapping("/info")
-	public Employee getInfo(Principal principal) {
+	public ResponseEntity<Employee> getInfo(Principal principal) {
 		logger.info("API hit: /api/employee/info method:GET Principal: "+principal);
-		System.out.println("inside controller info");
-		Employee employee = employeeService.getEmployeeInfo(principal);
-		return employee;
-	}
-	
-	
-//	@GetMapping("/employee/{employeeId}")
-//	public Optional<Employee> fetchEmployeeById(@PathVariable Long employeeId) {
-//		Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
-//		return employee;
-//	}
-
-//	@DeleteMapping("/employee/{employeeId}")
-//	public ResponseEntity<String> deleteEmployeeById(@PathVariable Long employeeId){
 //		try {
-//		employeeService.deleteEmployee(employeeId);
-//		return ResponseEntity.ok("Successfully Deleted");
+			System.out.println("inside controller info");
+			Employee employee = employeeService.getEmployeeInfo(principal);
+			return ResponseEntity.status(200).body(employee);
 //		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body("Error");
-//		}
-//	}
-	
-	
-	
-	@PutMapping("/employee/{employeeId}")
-	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
-		logger.info("API hit: /api/employee/employee/{employeeID} method:PUT body: "+employeeDTO);
-		Employee employee =  employeeService.updateEmployee(employeeId, employeeDTO);
-		return ResponseEntity.ok(employee);
-		
+//			return ResponseEntity.badRequest().body(null);
+//			}
 	}
+	
+	
+//	@PutMapping("/employee/{employeeId}")
+//	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
+//		logger.info("API hit: /api/employee/employee/{employeeID} method:PUT body: "+employeeDTO);
+////		try {
+//			Employee employee =  employeeService.updateEmployee(employeeId, employeeDTO);
+//			return ResponseEntity.status(200).body(employee);
+////		}catch(Exception e) {
+////			return ResponseEntity.badRequest().body(null);
+////			}
+//	}
 }

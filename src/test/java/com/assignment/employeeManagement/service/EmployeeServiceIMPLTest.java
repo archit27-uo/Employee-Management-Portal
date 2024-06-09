@@ -1,178 +1,174 @@
 package com.assignment.employeeManagement.service;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
+import java.util.HashSet;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.User;
+import com.assignment.employeeManagement.exception.ResourceNotFoundException;
 import com.assignment.employeeManagement.repository.EmployeeRepository;
 import com.assignment.employeeManagement.repository.ManagerRepository;
 import com.assignment.employeeManagement.repository.ProjectRepository;
 import com.assignment.employeeManagement.repository.UserLoginRepo;
-import com.assignment.employeeManagement.service.EmployeeServiceIMPL;
 
+@SpringBootTest
 public class EmployeeServiceIMPLTest {
-	 @Mock
-	    private EmployeeRepository employeeRepository;
 
-	    @Mock
-	    private UserLoginRepo userRepository;
+    @InjectMocks
+    private EmployeeServiceIMPL employeeService;
 
-	    @Mock
-	    private ManagerRepository managerRepository;
+    @Mock
+    private EmployeeRepository employeeRepository;
 
-	    @Mock
-	    private ProjectRepository projectRepository;
+    @Mock
+    private UserLoginRepo userRepository;
 
-	    @InjectMocks
-	    private EmployeeServiceIMPL employeeService;
+    @Mock
+    private ManagerRepository managerRepository;
 
-	    @BeforeEach
-	    void setUp() {
-	        MockitoAnnotations.openMocks(this);
-	    }
+    @Mock
+    private ProjectRepository projectRepository;
 
-	    @Test
-	    void testAddEmployee() {
-	        EmployeeDTO employeeDTO = new EmployeeDTO();
-	        employeeDTO.setUserId(1);
-	        employeeDTO.setManagerId(1L);
-	        employeeDTO.setProjectId(1L);
-	        employeeDTO.setFullName("Rahul");
+    @Mock
+    private Principal principal;
 
-	        User user = new User();
-	        Manager manager = new Manager();
-	        Project project = new Project();
+    private User user;
+    private Employee employee;
 
-	        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-	        when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
-	        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-	        when(employeeRepository.save(any(Employee.class))).thenReturn(new Employee());
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        
+        user = new User();
+        user.setUserId(1);
+        user.setUserEmail("test@example.com");
 
-	        Employee result = employeeService.addEmployee(employeeDTO);
+        employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setUser(user);
+        employee.setFullName("John Doe");
+    }
 
-	        verify(employeeRepository, times(1)).save(any(Employee.class));
-	        assertEquals(user, result.getUser());
-	        assertEquals(manager, result.getManager());
-	        assertEquals(project, result.getProject());
-	    }
+    @Test
+    public void testGetAllEmployees() {
+        List<Employee> employees = Arrays.asList(employee);
 
-	    @Test
-	    void testUpdateSkills() {
-	        Principal principal = () -> "rahul@mail.com";
-	        List<String> skills = Arrays.asList("Java", "Spring");
-	        User user = new User();
-	        Employee employee = new Employee();
-	        employee.setSkills(new HashSet<>(Arrays.asList("Java")));
+        when(employeeRepository.findAll()).thenReturn(employees);
 
-	        when(userRepository.findByUserEmail("rahul@mail.com")).thenReturn(user);
-	        when(employeeRepository.findByUser(user)).thenReturn(employee);
-	        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        List<Employee> result = employeeService.getAllEmployees();
 
-	        Employee result = employeeService.updateSkills(principal, skills);
+        assertEquals(employees, result);
+    }
 
-	        verify(employeeRepository, times(1)).save(any(Employee.class));
-	        assertEquals(2, result.getSkills().size());
-	    }
-	    @Test
-	    public void testUpdateEmployee() {
-	        EmployeeDTO employeeDTO = new EmployeeDTO();
-	        employeeDTO.setUserId(1);
-	        employeeDTO.setFullName("John Doe Updated");
-	        employeeDTO.setProjectId(1L);
-	        employeeDTO.setManagerId(1L);
-	        employeeDTO.setSkills(new HashSet<>(Arrays.asList("Java", "Spring")));
+    @Test
+    public void testGetAllEmployees_Exception() {
+        when(employeeRepository.findAll()).thenThrow(new RuntimeException("Internal Server Error"));
 
-	        Employee employee = new Employee();
-	        User user = new User();
-	        Project project = new Project();
-	        Manager manager = new Manager();
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+            employeeService.getAllEmployees();
+        });
 
-	        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
-	        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-	        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-	        when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
-	        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        assertEquals("Internal Server Error", thrown.getMessage());
+    }
 
-	        Employee updatedEmployee = employeeService.updateEmployee(1L, employeeDTO);
+    @Test
+    public void testUpdateSkills() {
+        List<String> skills = Arrays.asList("Java", "Spring");
 
-	        assertEquals("John Doe Updated", updatedEmployee.getFullName());
-	        assertEquals(user, updatedEmployee.getUser());
-	        assertEquals(project, updatedEmployee.getProject());
-	        assertEquals(manager, updatedEmployee.getManager());
-	        assertTrue(updatedEmployee.getSkills().contains("Java"));
-	        assertTrue(updatedEmployee.getSkills().contains("Spring"));
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(employeeRepository.findByUser(user)).thenReturn(employee);
+        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-	        verify(employeeRepository, times(1)).save(employee);
-	    }
-	    
-	    @Test
-	    public void testGetEmployeeInfo() {
-	        Principal principal = mock(Principal.class);
-	        when(principal.getName()).thenReturn("user@example.com");
+        Employee result = employeeService.updateSkills(principal, skills);
 
-	        User user = new User();
-	        user.setUserEmail("user@example.com");
+        assertEquals(new HashSet<>(skills), result.getSkills());
+    }
 
-	        Employee employee = new Employee();
+    @Test
+    public void testUpdateSkills_UserNotFound() {
+        List<String> skills = Arrays.asList("Java", "Spring");
 
-	        when(userRepository.findByUserEmail("user@example.com")).thenReturn(user);
-	        when(employeeRepository.findByUser(user)).thenReturn(employee);
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(null);
 
-	        Employee foundEmployee = employeeService.getEmployeeInfo(principal);
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            employeeService.updateSkills(principal, skills);
+        });
 
-	        assertEquals(employee, foundEmployee);
-	    }
-	    
-	    @Test
-	    public void testGetEmployeeById() {
-	        Employee employee = new Employee();
-	        when(employeeRepository.findByEmployeeId(1L)).thenReturn(Optional.of(employee));
+        assertEquals("User not found", thrown.getMessage());
+    }
 
-	        Optional<Employee> foundEmployee = employeeService.getEmployeeById(1L);
+    @Test
+    public void testUpdateSkills_EmployeeNotFound() {
+        List<String> skills = Arrays.asList("Java", "Spring");
 
-	        assertTrue(foundEmployee.isPresent());
-	        assertEquals(employee, foundEmployee.get());
-	        verify(employeeRepository, times(1)).findByEmployeeId(1L);
-	    }
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(employeeRepository.findByUser(user)).thenReturn(null);
 
-	    @Test
-	    public void testGetAllEmployees() {
-	        Employee employee1 = new Employee();
-	        Employee employee2 = new Employee();
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            employeeService.updateSkills(principal, skills);
+        });
 
-	        when(employeeRepository.findAll()).thenReturn(Arrays.asList(employee1, employee2));
+        assertEquals("Employee not found", thrown.getMessage());
+    }
 
-	        List<Employee> employees = employeeService.getAllEmployees();
+    @Test
+    public void testGetEmployeeInfo() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(employeeRepository.findByUser(user)).thenReturn(employee);
 
-	        assertEquals(2, employees.size());
-	        verify(employeeRepository, times(1)).findAll();
-	    }
+        Employee result = employeeService.getEmployeeInfo(principal);
 
-	    @Test
-	    public void testDeleteEmployee() {
-	        doNothing().when(employeeRepository).deleteById(1L);
+        assertEquals(employee, result);
+    }
 
-	        employeeService.deleteEmployee(1L);
+    @Test
+    public void testGetEmployeeInfo_UserNotFound() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(null);
 
-	        verify(employeeRepository, times(1)).deleteById(1L);
-	    }
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            employeeService.getEmployeeInfo(principal);
+        });
+
+        assertEquals("User not found", thrown.getMessage());
+    }
+
+    @Test
+    public void testGetEmployeeInfo_EmployeeNotFound() {
+        when(principal.getName()).thenReturn("test@example.com");
+        when(userRepository.findByUserEmail("test@example.com")).thenReturn(user);
+        when(employeeRepository.findByUser(user)).thenReturn(null);
+
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            employeeService.getEmployeeInfo(principal);
+        });
+
+        assertEquals("Employee not found", thrown.getMessage());
+    }
 }

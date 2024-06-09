@@ -1,6 +1,7 @@
 package com.assignment.employeeManagement.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -13,6 +14,6 @@ import com.assignment.employeeManagement.entity.User;
 @EnableJpaRepositories
 @Repository
 public interface ManagerRepository extends JpaRepository<Manager, Long>{
-	Manager findByUser(User user);
+	Optional<Manager> findByUser(User user);
 	Manager findByManagerId(Long managerId);
 }

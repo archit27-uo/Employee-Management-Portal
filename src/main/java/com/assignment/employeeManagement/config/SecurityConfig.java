@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN")
                 .requestMatchers("/api/employee/info").hasRole("EMPLOYEE")
                 .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/api/user").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> httpBasic
