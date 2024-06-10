@@ -11,6 +11,7 @@
 
 <body>
 
+    <!-- Side Bar -->
     <div class="sidebar">
 
         <h2>Employee Dashboard</h2>
@@ -22,16 +23,16 @@
 
         <a href="#" class="profile" onclick="showProfile()">Profile</a>
 
-        <div id="line"></div>
+        <div class="line"></div>
 
         <a href="#" onclick="logout()" class="logout">Logout</a>
     </div>
 
-
+    <!-- main Content -->
     <div class="main-content">
 
         <div id="home-page">
-            <div id="employee-details"></div>
+            <div id="employee-details"></div><!--Card-->
         </div>
 
         <div id="employee-list" class="employee-list">
@@ -43,7 +44,8 @@
         </div>
         <div id="editProfileModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
+                <span class="close"
+                    onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
                 <h3>Edit Profile</h3>
                 <form id="editProfileForm" onsubmit="submitEditProfileForm(event)">
                     <input type="hidden" id="editUserId">

@@ -10,7 +10,8 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     fetch("http://localhost:8080/api/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420"
       },
   
       body: JSON.stringify(login)

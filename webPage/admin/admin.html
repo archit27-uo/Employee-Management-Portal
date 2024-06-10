@@ -12,6 +12,8 @@
 
 <body>
 
+ <!-- Side Bar -->
+
     <div class="sidebar">
 
         <h2>ADMIN DASHBOARD</h2>
@@ -23,34 +25,40 @@
             <li><a href="#" onclick="showRequests()">Requests</a></li>
         </ul>
 
-        <div id="line"></div>
+        <div class="line"></div>
 
         <a href="#" onclick="logout()" class="logout">Logout</a>
 
     </div>
 
-    <!-- ------------------------------------------------------------------- -->
+<!-- ------------------------------------------------------------------- -->
 
     <div class="main-content">
 
-        <div class="search-bar">
+        <!-- <div class="search-bar">
 
             <input class="srch" type="text" placeholder="Search">
-            <button onclick="openAddUserModal()">Add Employee</button>
+          
 
-        </div>
+        </div> -->
 
         
 
         <div id="project" class="project" style="display: none;">
-            <button onclick="openAddProjectModal()" >Add Project</button>
-            <div id="project-list" class="project-list">
-
+            
+            <div class="pro"><h3>Project List</h3>
+                <button class="add" onclick="openAddProjectModal()" >Add Project</button>
             </div>
+
+            <div id="project-list" class="project-list"></div>
         </div>
 
 
         <div id="employee" class="employee">
+            <div class="pro"><h3>Employee List</h3>
+                <button class ="add" onclick="openAddUserModal()">Add User</button>
+            </div>
+            
             <div class="filter-bar">
                 <button onclick="filterEmployees('all')">ALL</button>
                 <button onclick="filterEmployees('assigned')">ASSIGNED</button>
@@ -66,7 +74,7 @@
             <!-- Request tiles will be appended here -->
         </div>
 
-        <div id="request-list" class="request-list" style="display: none;">
+        <div id="request-list" class="request-list">
             <!-- Request tiles will be appended here -->
         </div>
 

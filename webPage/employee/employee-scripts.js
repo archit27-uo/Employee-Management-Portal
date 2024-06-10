@@ -1,10 +1,11 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     showHomePage();
 });
 var token = localStorage.getItem("authToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
+headers.set("ngrok-skip-browser-warning", "69420")
 
 function showHomePage() {
     document.getElementById('home-page').style.display = 'block';
@@ -31,16 +32,17 @@ function showProfile() {
 }
 
 function fetchEmployeeInfo() {
-  
+
 
     fetch('http://localhost:8080/api/employee/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const employeeDetails = `
+            <div class="card">
             <h3>Welcome ! ${data.fullName}</h3>
             <p>Project : ${data.project ? data.project.projectName : 'None'}</p>
             <p>Manager : ${data.manager ? data.manager.user.userName : 'None'}</p>
-            `;
+            </div>`;
             document.getElementById('employee-details').innerHTML = employeeDetails;
         })
         .catch(error => {
@@ -50,18 +52,20 @@ function fetchEmployeeInfo() {
 
 
 function fetchEmployeeProfile() {
-   
+    
 
     fetch('http://localhost:8080/api/employee/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const profileDetails = `
+            <div class="card">
             <h3>${data.fullName} <i onclick="editProfile(${data.user.userId})" class="fas fa-edit" style="cursor: pointer;"></i></h3>
-            
-            <p>ID : ${data.user.userId} </p>
+            <p>ID : ${data.employeeId} </p>
             <p>Email : ${data.user.userEmail}</p>
+            <p>Project : ${data.project.projectName}</p>
+            <p>Manager: ${data.manager.user.userName}</p>
             <p>Skills : ${data.skills.join(', ')}</p>
-            `;
+            </div>`;
             document.getElementById('profile-details').innerHTML = profileDetails;
         })
         .catch(error => {
@@ -72,29 +76,30 @@ function fetchEmployeeProfile() {
 
 
 function editProfile(userId) {
+   
     // Fetch the current profile details
     fetch(`http://localhost:8080/api/employee/info`, {
         method: 'GET',
         headers: headers,
     })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Failed to fetch profile details for editing');
-        }
-    })
-    .then(data => {
-        // Display the modal with pre-filled data for editing
-        document.getElementById('editProfileModal').style.display = 'block';
-        document.getElementById('editUserId').value = data.user.userId;
-        document.getElementById('editFullName').value = data.fullName;
-        document.getElementById('editUserEmail').value = data.user.userEmail;
-        document.getElementById('editSkills').value = data.skills.join(', ');
-    })
-    .catch(error => {
-        showMessage('Error fetching profile details for editing: ' + error.message, 'error');
-    });
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error(response.json);
+            }
+        })
+        .then(data => {
+            // Display the modal with pre-filled data for editing
+            document.getElementById('editProfileModal').style.display = 'block';
+            // document.getElementById('editUserId').value = data.user.userId;
+            // document.getElementById('editFullName').value = data.fullName;
+            // document.getElementById('editUserEmail').value = data.user.userEmail;
+            document.getElementById('editSkills').value = data.skills.join(', ');
+        })
+        .catch(error => {
+            showMessage('Error fetching profile details for editing: ' + error.message, 'error');
+        });
 }
 
 // Function to submit the edited profile details
@@ -102,30 +107,30 @@ function submitEditProfileForm(event) {
     event.preventDefault();
     const skills = document.getElementById('editSkills').value.split(',').map(skill => skill.trim());
 
-   // const updatedProfile = 
+    // const updatedProfile = 
 
     fetch(`http://localhost:8080/api/employee/skills`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(skills)
-    })
-    .then(response => {
-        if (response.ok) {
-            showMessage('Profile updated successfully', 'success');
-            document.getElementById('editProfileModal').style.display = 'none';
-            fetchProfileDetails();
-        } else {
-            throw new Error('Failed to update profile');
-        }
-    })
-    .catch(error => {
-        showMessage('Error updating profile: ' + error.message, 'error');
-    });
+    }).then(response => {
+            if (response.status==200) {
+                console.log('here');
+                showMessage('Profile updated successfully', 'success');
+                document.getElementById('editProfileModal').style.display = 'none';
+                showProfile();
+            } else {
+                throw new Error('Failed to update profile');
+            }
+        })
+        .catch(error => {
+            showMessage('Error updating profile: ' + error.message, 'error');
+        });
 }
 
 
 function fetchAllEmployees() {
-   
+
 
     fetch('http://localhost:8080/api/employee/all', { headers: headers })
         .then(response => response.json())
@@ -137,10 +142,10 @@ function fetchAllEmployees() {
                 employeeCard.className = 'employee-card';
 
                 const employeeDetails = `
-                <div class="details">
+                <div class="details card">
                 <h3>${employee.fullName}</h3>
-                <p>Project: ${employee.project ? employee.project.name : 'None'}</p>
-                <p>Manager: ${employee.manager ? employee.manager.name : 'None'}</p>
+                <p>Project: ${employee.project ? employee.project.projectName : 'None'}</p>
+                <p>Manager: ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                 <p>Skills: ${employee.skills.join(', ')}</p>
             </div>
                 `;

@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     showHomePage();
 });
 
@@ -7,7 +7,29 @@ var token = localStorage.getItem("authToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
-function getManagerId(){
+
+async function fetchData(url, options={}) {
+    try {
+        const response = await fetch(url, { headers, ...options });
+        console.log(response.status);
+        if (response.status!=200 && response.status!=201){ 
+            const errorData = await response.json();
+            const errorMessage = errorData.message || 'Failed to update employee';
+            throw new Error(errorMessage);
+
+    }       
+    const data = await response.json();
+    return {status : response.status, data };
+        
+    } catch (error) {
+       // console.error('API Error:', error);
+        showMessage(`Failed due to: ${error.message}`, 'error');
+        
+    }
+}
+
+
+function getManagerId() {
     return this.managerId;
 }
 
@@ -62,7 +84,7 @@ function showProfile() {
 }
 
 
-function showRequests(){
+function showRequests() {
     document.getElementById('home-page').style.display = 'none';
     document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
@@ -72,12 +94,12 @@ function showRequests(){
     fetchAllRequest(managerId);
 }
 function fetchManagerInfo() {
-  
+
     fetch('http://localhost:8080/api/manager/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
-            this.managerId=data.managerId;
-            const managerDetails = `
+            this.managerId = data.managerId;
+            const managerDetails = `<div class="card">
             <h3>${data.fullName}</h3>
             <h4>Projects</h4>
             <ul>
@@ -87,7 +109,7 @@ function fetchManagerInfo() {
             <ul>
                 ${data.employeeList.map(employee => `<li>Employee ID: ${employee.employeeId}, Name: ${employee.fullName}</li>`).join('')}
             </ul>
-            `;
+             </div>`;
             document.getElementById('manager-details').innerHTML = managerDetails;
         })
         .catch(error => {
@@ -100,7 +122,7 @@ function fetchManagerProfile() {
     fetch('http://localhost:8080/api/manager/info', { headers: headers })
         .then(response => response.json())
         .then(data => {
-            const profileDetails = `
+            const profileDetails = `<div class="card">
             <h3>${data.fullName}</h3>
             <h4>Projects</h4>
             <ul>
@@ -109,7 +131,7 @@ function fetchManagerProfile() {
             <h4>Team Members</h4>
             <ul>
                 ${data.employeeList.map(employee => `<li>Employee ID: ${employee.employeeId}, Name: ${employee.fullName}</li>`).join('')}
-            </ul>
+            </ul></div>
             `;
             document.getElementById('profile-details').innerHTML = profileDetails;
         })
@@ -120,30 +142,33 @@ function fetchManagerProfile() {
 function filterEmployees(filter) {
     fetchEmployees(filter);
 }
-function fetchMyEmployees(){
+function fetchMyEmployees() {
     fetch('http://localhost:8080/api/manager/employee/team', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const employeeList = document.getElementById('employee-list');
-            employeeList.innerHTML = ''; 
-           
-            data.forEach(employee => {
-                
-                    const employeeCard = document.createElement('div');
-                    employeeCard.className = 'employee-card';
+            employeeList.innerHTML = '';
 
-                    const employeeDetails = `<div class="details">
-                    <div class="details">
+            data.forEach(employee => {
+
+                const employeeCard = document.createElement('div');
+                employeeCard.className = 'employee-card';
+
+                const employeeDetails = `
+                    <div class="details card">
                     <h3>${employee.fullName}</h3>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
-                    <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                    <div class="btn">
+                       <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                       <button onclick="requestAdmin(${employee}, "UNASSIGN_EMPLOYEE")">Unassign</button>
+                    </div>
                     <p>Skills : ${employee.skills.join(', ')}</p>
-                    <button onclick="requestAdmin(${employee}, "UNASSIGN_EMPLOYEE")">Unassign</button>
-                </div> `;
                     
-                    employeeCard.innerHTML = employeeDetails;
-                    employeeList.appendChild(employeeCard);
-          
+                </div> `;
+
+                employeeCard.innerHTML = employeeDetails;
+                employeeList.appendChild(employeeCard);
+
             });
         })
         .catch(error => {
@@ -151,71 +176,76 @@ function fetchMyEmployees(){
         });
 }
 function fetchAllEmployees() {
-   
-        //     const employeeList = document.getElementById('employee-list');
-        //     employeeList.innerHTML = '';  // Clear the list
-        //     filterBar = document.createElement('div');
-        //         filterBar.className = 'filter-bar';
-        //     const employeeFilter = `
-        //     <button onclick="filterEmployees('all')">ALL</button>
-        //     <button onclick="filterEmployees('assigned')">ASSIGNED</button>
-        //     <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
-        // `;
-        // filterBar.innerHTML = employeeFilter;
-        // employeeList.appendChild(filterBar);
-      
-        fetchEmployees("all");
-     
-        //     data.forEach(employee => {
-        //         const employeeCard = document.createElement('div');
-        //         employeeCard.className = 'employee-card';
 
-        //         const employeeDetails = `
-        //         <div class="details">
-        //         <h3>${employee.fullName}</h3>
-        //         <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
-        //         <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
-        //         <p>Skills : ${employee.skills.join(', ')}</p>
-        //         <button onclick="requestEmployee(${employee.employeeId})">Request</button>
-        //     </div>
-        //         `;
+    //     const employeeList = document.getElementById('employee-list');
+    //     employeeList.innerHTML = '';  // Clear the list
+    //     filterBar = document.createElement('div');
+    //         filterBar.className = 'filter-bar';
+    //     const employeeFilter = `
+    //     <button onclick="filterEmployees('all')">ALL</button>
+    //     <button onclick="filterEmployees('assigned')">ASSIGNED</button>
+    //     <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
+    // `;
+    // filterBar.innerHTML = employeeFilter;
+    // employeeList.appendChild(filterBar);
 
-        //         employeeCard.innerHTML = employeeDetails;
-        //         employeeList.appendChild(employeeCard);
-        //     });
-        // })
-        // .catch(error => {
-        //     console.error('Error fetching employee list:', error);
-        // });
+    fetchEmployees("all");
 
-        }
+    //     data.forEach(employee => {
+    //         const employeeCard = document.createElement('div');
+    //         employeeCard.className = 'employee-card';
+
+    //         const employeeDetails = `
+    //         <div class="details">
+    //         <h3>${employee.fullName}</h3>
+    //         <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
+    //         <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+    //         <p>Skills : ${employee.skills.join(', ')}</p>
+    //         <button onclick="requestEmployee(${employee.employeeId})">Request</button>
+    //     </div>
+    //         `;
+
+    //         employeeCard.innerHTML = employeeDetails;
+    //         employeeList.appendChild(employeeCard);
+    //     });
+    // })
+    // .catch(error => {
+    //     console.error('Error fetching employee list:', error);
+    // });
+
+}
 function fetchEmployees(filter) {
-    console.log("fetch all")
+
 
     fetch('http://localhost:8080/api/manager/employee', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const employeeList = document.getElementById('employee-list');
             employeeList.innerHTML = '';  // Clear the list
-           
+
             data.forEach(employee => {
                 if (filter === 'all' || (filter === 'assigned' && employee.project) || (filter === 'unassigned' && !employee.project)) {
                     const employeeCard = document.createElement('div');
                     employeeCard.className = 'employee-card';
 
-                    const employeeDetails = filter==='unassigned'?`
+                    const employeeDetails = filter === 'unassigned' ? `
             
-                    <div class="details">
+                    <div class="details card">
+                    <div>
                     <h3>${employee.fullName}</h3>
+                    <button onclick="openAssignProjectModal(${employee.employeeId})">Request</button>
+                    </div>
+                    
                     <p>EmployeeId : ${employee.employeeId}</p>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
                     <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                    
                     <p>Skills : ${employee.skills.join(', ')}</p>
                    
-                </div> ` :`
+                </div> ` : `
                     
             
-                    <div class="details">
+                    <div class="details card">
                     <h3>${employee.fullName}</h3>
                     <p>EmployeeId : ${employee.employeeId}</p>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
@@ -223,8 +253,8 @@ function fetchEmployees(filter) {
                     <p>Skills : ${employee.skills.join(', ')}</p>
                     
                          
-                </div>    `;
-                    // <button onclick="requestEmployee(${employee.employeeId})">Request</button>
+                </div>`;
+                    // 
                     employeeCard.innerHTML = employeeDetails;
                     employeeList.appendChild(employeeCard);
                 }
@@ -236,19 +266,19 @@ function fetchEmployees(filter) {
 }
 
 function fetchAllManagers() {
-    
+
 
     fetch('http://localhost:8080/api/manager/manager', { headers: headers })
         .then(response => response.json())
         .then(data => {
             const managerList = document.getElementById('manager-list');
-            managerList.innerHTML = '';  // Clear the list
+            managerList.innerHTML = '<h3>Manager List</h3>';  // Clear the list
             data.forEach(manager => {
                 const managerCard = document.createElement('div');
                 managerCard.className = 'manager-card';
 
                 const managerDetails = `
-                <div class="details">
+                <div class="details card">
                 <h3>${manager.user.userName}</h3>
                 <p>Email : ${manager.user.userEmail}</p>
             </div>
@@ -270,14 +300,14 @@ function fetchAllProjects() {
         .then(response => response.json())
         .then(data => {
             const projectList = document.getElementById('project-list');
-            projectList.innerHTML = '';  // Clear the list
+            projectList.innerHTML = '<h3>Project List</h3>';  // Clear the list
             data.forEach(project => {
                 const projectCard = document.createElement('div');
                 projectCard.className = 'project-card';
 
                 const managerName = project.manager ? project.manager.user.userName : 'None';
                 const projectDetails = `
-                    <div class="details">
+                    <div class="details card">
                         <p>Project ID: ${project.projectId}</p>
                         <p>Project Name: ${project.projectName}</p>
                         <p>Manager: ${managerName}</p>
@@ -293,14 +323,35 @@ function fetchAllProjects() {
         });
 }
 
+function openAssignProjectModal(employeeId) {
+    document.getElementById('assignEmployeeId').value = employeeId;
+    document.getElementById('assignProjectModal').style.display = 'block';
+}
+
+// Close the Assign Project Modal
+function closeAssignProjectModal() {
+    document.getElementById('assignProjectModal').style.display = 'none';
+}
+function requestEmployee(event){
+    event.preventDefault();
+    const employeeId = document.getElementById('assignEmployeeId').value;
+    const projectId = document.getElementById('assignProjectId').value;
+    const employee ={
+        employeeId:employeeId,
+        projectId:projectId,
+    }
+    requestAdmin(employee, "ASSIGN_EMPLOYEE");
+}
+
+
 function requestAdmin(employee, requestTypeName) {
- 
+
 
     const requestData = {
         requesterId: parseInt(this.managerId),
         requestType: requestTypeName,
         projectId: parseInt(employee.projectId),
-        employeeIds:parseInt(employee.employeeId),
+        employeeIds: parseInt(employee.employeeId),
         requestDetails: null
     };
 
@@ -311,20 +362,20 @@ function requestAdmin(employee, requestTypeName) {
         headers: headers,
         body: JSON.stringify(requestData)
     })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Request failed');
-        }
-    })
-    .then(data => {
-        showMessage('Request submitted successfully!', 'success');
-        closeRequestModal();
-    })
-    .catch(error => {
-        showMessage('Error submitting request: ' + error.message, 'error');
-    });
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Request failed');
+            }
+        })
+        .then(data => {
+            showMessage('Request submitted successfully!', 'success');
+            closeRequestModal();
+        })
+        .catch(error => {
+            showMessage('Error submitting request: ' + error.message, 'error');
+        });
 }
 
 
@@ -338,9 +389,9 @@ function closeRequestModal() {
 }
 
 // Function to submit the request form
-function submitRequestForm(event) {
+async function submitRequestForm(event) {
     event.preventDefault();
-    console.log(this.getManagerId);
+    
     const requesterId = this.managerId;
     const requestType = document.getElementById('requestType').value;
     const projectId = document.getElementById('projectId').value;
@@ -362,26 +413,32 @@ function submitRequestForm(event) {
     } else if (requestType === 'PROJECT_RESOURCE') {
         apiUrl = 'http://localhost:8080/api/manager/request/projectResource';
     }
-
-    fetch(apiUrl, {
+    const {status, response} = await fetchData(apiUrl, {
         method: 'POST',
-        headers: headers,
         body: JSON.stringify(requestData)
     })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Request failed');
-        }
-    })
-    .then(data => {
-        showMessage('Request submitted successfully!', 'success');
-        closeRequestModal();
-    })
-    .catch(error => {
-        showMessage('Error submitting request: ' + error.message, 'error');
-    });
+    // fetch(apiUrl, {
+    //     method: 'POST',
+    //     headers: headers,
+    //     body: JSON.stringify(requestData)
+    // })
+    //     .then(response => {
+            if (status==200) {
+                showMessage('Request submitted successfully!', 'success');
+                closeRequestModal();
+                showRequests();
+                return response.json();
+            } else {
+                throw new Error('Request failed');
+            }
+        // })
+        // .then(data => {
+        //     showMessage('Request submitted successfully!', 'success');
+        //     closeRequestModal();
+        // })
+        // .catch(error => {
+        //     showMessage('Error submitting request: ' + error.message, 'error');
+        // });
 }
 
 
@@ -393,26 +450,26 @@ function filterEmployees() {
         method: 'GET',
         headers: headers,
     })
-    .then(response => {
-        
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Failed to fetch employees');
-        }
-    })
-    .then(data => {
-        displayFilteredEmployees(data);
-    })
-    .catch(error => {
-        showMessage('Error fetching employees: ' + error.message, 'error');
-    });
+        .then(response => {
+
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Failed to fetch employees');
+            }
+        })
+        .then(data => {
+            displayFilteredEmployees(data);
+        })
+        .catch(error => {
+            showMessage('Error fetching employees: ' + error.message, 'error');
+        });
 }
 
 
 // Function to display filtered employees
 function displayFilteredEmployees(employees) {
-    
+
     const employeeList = document.getElementById('employee-list');
     employeeList.innerHTML = '';
 
@@ -425,15 +482,15 @@ function displayFilteredEmployees(employees) {
         const employeeCard = document.createElement('div');
         employeeCard.className = 'employee-card';
         console.log(employee)
-        const employeeDetails = employee.project==null?`<div class="details">
-                    <div class="details">
+        const employeeDetails = employee.project == null ? `<div class="details">
+                    <div class="details card">
                     <h3>${employee.fullName}</h3>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
                     <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                     <p>Skills : ${employee.skills.join(', ')}</p>
                     <button onclick="requestEmployee(${employee.employeeId})">Request</button>
-                </div> ` :`
-                    <div class="details">
+                </div> ` : `
+                    <div class="details card">
                     <div class="details">
                     <h3>${employee.fullName}</h3>
                     <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
@@ -448,62 +505,57 @@ function displayFilteredEmployees(employees) {
     });
 }
 
-function fetchAllRequest(managerId){
-    
-   
+function fetchAllRequest(managerId) {
+
+
     fetch(`http://localhost:8080/api/manager/request/manager/${managerId}`, {
         method: 'GET',
         headers: headers,
-        
+
     })
-    .then(response => response.json())
-    .then(data => {
-        const requestList = document.getElementById('request-list');
-        requestList.innerHTML = '';  // Clear the list
-       
-        data.forEach(request => {
-          
+        .then(response => response.json())
+        .then(data => {
+            const requestList = document.getElementById('request-list');
+            requestList.innerHTML = '';  // Clear the list
+
+            data.forEach(request => {
                 const requestAccordion = document.createElement('div');
                 requestAccordion.className = 'accordion-item';
 
-               const requestDetails = `
-               <div class = "accordion">
-               <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  Request Id : ${request.requestId}
-                </button>
-              </h2>
-              <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                <div class="lst">
-                <table>
-                <tr>
-                <td>Request Type: ${request.requestType}</td>
-                        
-                       
-                        <td>Project ID: ${request.projectId}</td>
-                     
-                        <td>Employee IDs: ${request.employeeIds.join(', ')}</td>
-                        <td>Request Details: ${request.requestDetails}</td>
-                        <td>Status: ${request.status}</td>
-                        </tr>
-                  </table>      
-                        
-                 </div> 
-                </div>
-              </div>
-              </div>`;
-
-                
-                
-              requestAccordion.innerHTML =requestDetails;
+                const requestDetails = `
+               <button class="accordion"> Request Id : ${request.requestId} </button>
+               <div class="panel card">
+                        <p>Request Type: ${request.requestType}</p>
+                        <p>Project ID: ${request.projectId}</p>
+                        <p>Employee IDs: ${request.employeeIds.join(', ')}</p>
+                        <p>Request Details: ${request.requestDetails}</p>
+                        <p class="sts">Status: ${request.status}</p>
+                </div>`;
+                requestAccordion.innerHTML = requestDetails;
                 requestList.appendChild(requestAccordion);
+            });
+
+            //  Accordion Panel for Request 
+            var acc = document.getElementsByClassName("accordion");
+            var i;
             
+            for (i = 0; i < acc.length; i++) {
+              acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                  panel.style.maxHeight = null;
+                } else {
+                  panel.style.maxHeight = panel.scrollHeight + "px";
+                } 
+              });
+            }
+            // ---------------End!-----------------
+
+        })
+        .catch(error => {
+            console.error('Error fetching employee data:', error);
         });
-    })
-    .catch(error => {
-        console.error('Error fetching employee data:', error);
-    });
 }
 
 function logout() {
@@ -514,16 +566,35 @@ function logout() {
     window.location.href = '../login/login.html'; // Adjust this to the path of your login page
 }
 
+// Function to display messages
 function showMessage(message, type) {
-    const messageDiv = document.getElementById('message');
-    if (messageDiv) {
-        messageDiv.textContent = message;
-        messageDiv.className = type === 'success' ? 'message success' : 'message error';
-        setTimeout(() => {
-            messageDiv.textContent = '';
-            messageDiv.className = 'message';
-        }, 3000);
-    } else {
-        console.error('Message element not found');
+    const messageElement = document.createElement('div');
+    messageElement.textContent = message;
+    messageElement.className = type === 'success' ? 'success-message' : 'error-message';
+    
+    // Styling for success and error messages
+    if (type === 'success') {
+        messageElement.style.backgroundColor = 'green';
+        messageElement.style.color = 'white';
+    } else if (type === 'error') {
+        messageElement.style.backgroundColor = 'red';
+        messageElement.style.color = 'white';
     }
+    
+
+    // Common styles for the message element
+    messageElement.style.position = 'fixed';
+    messageElement.style.top = '20px';
+    messageElement.style.left = '50%';
+    messageElement.style.transform = 'translateX(-50%)';
+    messageElement.style.padding = '10px';
+    messageElement.style.borderRadius = '5px';
+    messageElement.style.zIndex = '1000';
+    messageElement.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+
+    document.body.appendChild(messageElement);
+
+    setTimeout(() => {
+        document.body.removeChild(messageElement);
+    }, 3000);
 }

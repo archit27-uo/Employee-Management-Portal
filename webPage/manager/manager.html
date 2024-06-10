@@ -5,16 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="styles.css">
+    
+    
     <style>
         td {
             padding: 10px; /* Adjust the value as needed */
         }
         table {
-    border-spacing: 30px; /* Adjust the value as needed */
-}
+            border-spacing: 30px; /* Adjust the value as needed */
+        }
     </style>
    
 </head>
@@ -34,7 +36,7 @@
 
         <a href="#" class="profile" onclick="showProfile()">Profile</a>
 
-        <div id="line"></div>
+        <div class="line"></div>
 
         <a href="#" onclick="logout()" class="logout">Logout</a>
     </div>
@@ -49,23 +51,27 @@
 
         <div id="employee" class="employee">
 
-            <div class="employee-filter-section">
-                <h3>Filter Employees by Skills</h3>
-                <label for="skills">Skills (comma separated):</label>
-                <input type="text" id="skills" name="skills">
+            <h3>Filter Employees by Skills</h3>
+            
+            <div class="search">
+              <div class="employee-filter-section">    
+                <label for="skills">Skills (comma separated) : </label>
+                <input type="text" class="srch" id="skills" name="skills">
                 <button onclick="filterEmployees()">Filter</button>
+              </div>
             </div>
 
-            <div class="filter-bar">
-
+              <div class="filter-bar">
                 <button onclick="fetchEmployees('all')">ALL</button>
                 <button onclick="fetchEmployees('unassigned')">UNASSIGNED</button>
                 <button onclick="fetchMyEmployees()">My Team</button>
-            </div>
+              </div>
+            
 
             <div id="employee-list" class="employee-list">
                 <!-- Employee cards will be appended here -->
             </div>
+            
 
         </div>
 
@@ -76,19 +82,18 @@
         <div id="project-list" class="project-list" style="display: none;">
             <!-- Project cards will be appended here -->
         </div>
-        <div id="request" class="request" style="display: none;">
-            <button onclick="openRequestModal()" class="button">Add Request</button>
-        </br>
-    </br>
-      <p><b>Your Requests</b></p>
 
-            <div class="request-list" id="request-list">
-
+        <div id="request" class="request">
+            <div class="title_btn">
+               <h3>Your Requests</h3>
+               <button onclick="openRequestModal()" class="button">Add Request</button>
             </div>
-            
+            <div class="request-list" id="request-list"></div>
         </div>
+
         <div id="profile-page" style="display: none;">
-            <div id="profile-details"></div>
+           <h3>Profile Info</h3>         
+           <div id="profile-details"></div>
         </div>
 
 
@@ -100,11 +105,11 @@
                 <form id="requestForm" onsubmit="submitRequestForm(event)">
                    
                     
-                    <label for="requestType">Request Type:</label>
+                    <label for="requestType">Request Type :</label>
                     <select id="requestType" name="requestType" required>
-                        <option value="ASSIGN_EMPLOYEE">ASSIGN_EMPLOYEE</option>
-                        <option value="UNASSIGN_EMPLOYEE">UNASSIGN_EMPLOYEE</option>
-                        <option value="PROJECT_RESOURCE">PROJECT_RESOURCE</option>
+                        <option value="ASSIGN_EMPLOYEE">Assign Employee</option>
+                        <option value="UNASSIGN_EMPLOYEE">Unassign Empoyee</option>
+                        <option value="PROJECT_RESOURCE">Project Resource</option>
                     </select>
                     
                     <label for="projectId">Project ID:</label>
@@ -113,18 +118,32 @@
                     <label for="employeeIds">Employee IDs (comma separated):</label>
                     <input type="text" id="employeeIds" name="employeeIds" >
                     
-                    <label for="requestDetails">Request Details:</label>
-                    <textarea id="requestDetails" name="requestDetails"></textarea>
+                    <label class="rqst" for="requestDetails">Request Details :</label>
                     
-                    <button type="submit">Submit Request</button>
+                    <div class="submit_btn">
+                       <textarea id="requestDetails" name="requestDetails"></textarea>
+                       <button type="submit">Submit Request</button>
+                    </div>
+                
                 </form>
             </div>
         </div>
-
+        <div id="assignProjectModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAssignProjectModal()">&times;</span>
+                <h2>Assign Project</h2>
+                <form id="assignProjectForm" onsubmit="requestEmployee(event)">
+                    <label for="assignProjectId">Project ID:</label>
+                    <input type="number" id="assignProjectId" name="assignProjectId" required>
+                    <input type="hidden" id="assignEmployeeId" name="assignEmployeeId">
+                    <button type="submit">Assign Project</button>
+                </form>
+            </div>
+        </div>
         <div id="message" class="message"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="manager-scripts.js" defer></script>
 </body>
 
-</html>
+</html> 
