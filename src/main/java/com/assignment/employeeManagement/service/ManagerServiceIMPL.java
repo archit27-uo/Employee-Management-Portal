@@ -144,7 +144,7 @@ public class ManagerServiceIMPL implements ManagerService {
             throw ex;
         } catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
+            throw ex;
         }
 	}
 

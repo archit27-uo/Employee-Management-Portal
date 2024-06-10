@@ -23,6 +23,6 @@ public interface AdminService {
 	    Request approveRequest(Long requestId);
 	    Request rejectRequest(Long requestId);
 	    void deleteEmployee(Long employeeId);
-	    Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO);
+	    Employee updateEmployee(EmployeeDTO employeeDTO);
 		Employee getEmployeeById(Long employeeId);
 }

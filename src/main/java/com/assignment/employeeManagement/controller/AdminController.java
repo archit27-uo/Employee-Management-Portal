@@ -25,6 +25,7 @@ import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
 import com.assignment.employeeManagement.entity.User;
 import com.assignment.employeeManagement.exception.ResourceNotFoundException;
+import com.assignment.employeeManagement.payload.response.Response;
 import com.assignment.employeeManagement.service.AdminService;
 import com.assignment.employeeManagement.service.EmployeeService;
 import com.assignment.employeeManagement.service.UserService;
@@ -81,28 +82,23 @@ public class AdminController {
 	}
 
 	@DeleteMapping("/employee/{employeeId}")
-	public ResponseEntity<String> deleteEmployeeById(@PathVariable Long employeeId){
+	public ResponseEntity<Response> deleteEmployeeById(@PathVariable Long employeeId){
 		logger.info("API hit: /api/admin/employee/{employeeId} method:Delete");
 //		try {
 			adminService.deleteEmployee(employeeId);
-			return ResponseEntity.status(200).body("Successfully Deleted");
+			return ResponseEntity.status(200).body(new Response("Successfully deleted"));
 //		}catch(Exception e) {
 //			return ResponseEntity.badRequest().body("Error : "+e);
 //		}
 	}
 	
 	
-	@PutMapping("/employee/{employeeId}")
-	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
+	@PutMapping("/employee")
+	public ResponseEntity<Employee> updateEmployee(@RequestBody EmployeeDTO employeeDTO){
 		logger.info("API hit: /api/admin/employee/{employeeId} method:PUT body: "+employeeDTO);
-//		try {
-			Employee employee = adminService.updateEmployee(employeeId, employeeDTO);
+
+			Employee employee = adminService.updateEmployee(employeeDTO);
 			return ResponseEntity.ok(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
-//		
-		
 	}
 	
 	
@@ -112,7 +108,7 @@ public class AdminController {
     	logger.info("API hit: /api/admin/project method:POST");
 //        try {
         	 Project project = adminService.addProject(projectDTO);
-    		return ResponseEntity.status(200).body(project);
+    		return ResponseEntity.status(201).body(project);
 //    	}catch(Exception e) {
 //    		return ResponseEntity.badRequest().body(null);
 //    		}

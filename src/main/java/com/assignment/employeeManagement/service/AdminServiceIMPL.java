@@ -269,29 +269,30 @@ public class AdminServiceIMPL implements AdminService{
 	}
 	
 	@Override
-	public Employee updateEmployee(Long employeeId, EmployeeDTO employeeDTO) {
+	public Employee updateEmployee(EmployeeDTO employeeDTO) {
 	try {
-		Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employee id: "+employeeId));	
+		Employee employee = employeeRepository.findById(employeeDTO.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employee id: "+employeeDTO.getEmployeeId()));	
 		employee.setFullName(employeeDTO.getFullName());
 
         if (employeeDTO.getProjectId() != null) {
             Project project = projectRepository.findById(employeeDTO.getProjectId())
                     .orElseThrow(() -> new ResourceNotFoundException("Project not found with project Id: "+employeeDTO.getProjectId()));
             employee.setProject(project);
-            Manager manager = managerRepository.findById(employeeDTO.getManagerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager Id: "+employeeDTO.getManagerId()));
+            Manager manager = project.getManager();
+            if(employeeDTO.getManagerId()!= manager.getManagerId()) {
+            	throw new IllegalArgumentException("Manager Id does not match with project manager id");
+            }
             employee.setManager(manager);
         } else {
             employee.setProject(null);
+            employee.setManager(null);
         }
 
         if (employeeDTO.getManagerId() != null && employee.getProject()==null) {
             Manager manager = managerRepository.findById(employeeDTO.getManagerId())
                     .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager Id: "+employeeDTO.getManagerId()));
             employee.setManager(manager);
-        } else {
-            employee.setManager(null);
         }
 
         employee.setSkills(employeeDTO.getSkills());
@@ -301,7 +302,10 @@ public class AdminServiceIMPL implements AdminService{
 		}catch (ResourceNotFoundException ex) {
             logger.error("ResourceNotFoundException: {}", ex.getMessage());
             throw ex;
-        } catch (Exception ex) {
+        }catch(IllegalArgumentException ex) {
+        	logger.error("IllegalArgumentException: {}", ex.getMessage());
+        	throw ex;
+        }catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
             throw new RuntimeException("Internal Server Error");
         }

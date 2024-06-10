@@ -31,7 +31,7 @@ import com.assignment.employeeManagement.service.ManagerService;
 @RequestMapping("/api/manager")
 public class ManagerController {
 
-	private static final Logger logger = LogManager.getLogger(EmployeeController.class);
+	private static final Logger logger = LogManager.getLogger(ManagerController.class);
 	
 	@Autowired
 	private ManagerService managerService;
