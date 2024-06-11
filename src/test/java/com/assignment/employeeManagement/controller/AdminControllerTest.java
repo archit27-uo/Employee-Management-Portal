@@ -2,6 +2,7 @@ package com.assignment.employeeManagement.controller;
 
 import com.assignment.employeeManagement.dto.*;
 import com.assignment.employeeManagement.entity.*;
+import com.assignment.employeeManagement.payload.response.Response;
 import com.assignment.employeeManagement.service.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,10 +70,10 @@ public class AdminControllerTest {
     @Test
     public void testDeleteEmployeeById() {
         Long employeeId = 1L;
-        ResponseEntity<String> response = adminController.deleteEmployeeById(employeeId);
+        ResponseEntity<Response> response = adminController.deleteEmployeeById(employeeId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Successfully Deleted", response.getBody());
+        assertEquals("Successfully deleted", response.getBody().getMessage());
     }
 
     @Test
@@ -80,9 +81,9 @@ public class AdminControllerTest {
         Long employeeId = 1L;
         EmployeeDTO employeeDTO = new EmployeeDTO();
         Employee employee = new Employee();
-        when(adminService.updateEmployee(any(Long.class), any(EmployeeDTO.class))).thenReturn(employee);
+        when(adminService.updateEmployee( any(EmployeeDTO.class))).thenReturn(employee);
 
-        ResponseEntity<Employee> response = adminController.updateEmployee(employeeId, employeeDTO);
+        ResponseEntity<Employee> response = adminController.updateEmployee( employeeDTO);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(employee, response.getBody());
@@ -96,7 +97,7 @@ public class AdminControllerTest {
 
         ResponseEntity<Project> response = adminController.addProject(projectDTO);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(project, response.getBody());
     }
 

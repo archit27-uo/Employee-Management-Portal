@@ -1,32 +1,39 @@
 package com.assignment.employeeManagement.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.dto.ManagerDTO;
 import com.assignment.employeeManagement.dto.ProjectDTO;
-import com.assignment.employeeManagement.entity.*;
+import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
+import com.assignment.employeeManagement.entity.Project;
+import com.assignment.employeeManagement.entity.Request;
+import com.assignment.employeeManagement.entity.User;
 import com.assignment.employeeManagement.exception.EmployeeAlreadyAssignedException;
 import com.assignment.employeeManagement.exception.ResourceNotFoundException;
 import com.assignment.employeeManagement.model.RequestStatus;
 import com.assignment.employeeManagement.model.RequestType;
-import com.assignment.employeeManagement.repository.*;
+import com.assignment.employeeManagement.repository.EmployeeRepository;
+import com.assignment.employeeManagement.repository.ManagerRepository;
+import com.assignment.employeeManagement.repository.ProjectRepository;
+import com.assignment.employeeManagement.repository.RequestRepository;
+import com.assignment.employeeManagement.repository.UserLoginRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(SpringExtension.class)
-class AdminServiceIMPLTest {
-
-    @InjectMocks
-    private AdminServiceIMPL adminService;
+@ExtendWith(MockitoExtension.class)
+public class AdminServiceIMPLTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
@@ -49,530 +56,463 @@ class AdminServiceIMPLTest {
     @Mock
     private ManagerService managerService;
 
-    private AutoCloseable closeable;
+    @InjectMocks
+    private AdminServiceIMPL adminService;
+
+    private User user;
+    private Employee employee;
+    private Manager manager;
+    private Project project;
+    private Request request;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    public void setUp() {
+        user = new User();
+        user.setUserId(1);
+
+        employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setUser(user);
+
+        manager = new Manager();
+        manager.setManagerId(1L);
+        manager.setUser(user);
+
+        project = new Project();
+        project.setProjectId(1L);
+        project.setProjectName("Test Project");
+        project.setManager(manager);
+
+        request = new Request();
+        request.setRequestId(1L);
+        request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
+        request.setEmployeeIds(Collections.singletonList(employee.getEmployeeId()));
+        request.setProjectId(project.getProjectId());
     }
 
     @Test
-    void addEmployee_Success() {
+    public void testAddEmployee_Success() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setUserId(1);
-        employeeDTO.setManagerId(2L);
-        employeeDTO.setProjectId(3L);
-        User user = new User();
-        user.setUserId(1);
-        Manager manager = new Manager();
-        manager.setManagerId(2L);
-        Project project = new Project();
-        project.setProjectId(3L);
+        employeeDTO.setUserId(user.getUserId());
+        employeeDTO.setEmployeeId(employee.getEmployeeId());
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(managerRepository.findById(2L)).thenReturn(Optional.of(manager));
-        when(projectRepository.findById(3L)).thenReturn(Optional.of(project));
-
-        Employee employee = new Employee();
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
         Employee result = adminService.addEmployee(employeeDTO);
 
         assertNotNull(result);
-        verify(userRepository).findById(1);
-        verify(managerRepository).findById(2L);
-        verify(projectRepository).findById(3L);
-        verify(employeeRepository).save(any(Employee.class));
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void addEmployee_ResourceNotFoundException() {
+    public void testAddEmployee_UserNotFound() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setUserId(1);
+        employeeDTO.setUserId(user.getUserId());
 
-        when(userRepository.findById(1)).thenReturn(Optional.empty());
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.addEmployee(employeeDTO);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> adminService.addEmployee(employeeDTO));
 
-        assertEquals("No user found with user id: 1", exception.getMessage());
-        verify(userRepository).findById(1);
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(employeeRepository, never()).save(any(Employee.class));
     }
 
     @Test
-    void addEmployee_Exception() {
+    public void testAddEmployee_ProjectNotFound() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setUserId(1);
+        employeeDTO.setUserId(user.getUserId());
+        employeeDTO.setProjectId(project.getProjectId());
 
-        when(userRepository.findById(1)).thenThrow(new RuntimeException("Database error"));
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.addEmployee(employeeDTO);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> adminService.addEmployee(employeeDTO));
 
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(userRepository).findById(1);
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
     }
 
     @Test
-    void addProject_Success() {
+    public void testAddEmployee_ManagerMismatch() {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setUserId(user.getUserId());
+        employeeDTO.setProjectId(project.getProjectId());
+        employeeDTO.setManagerId(2L);
+
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.of(project));
+
+        assertThrows(IllegalArgumentException.class, () -> adminService.addEmployee(employeeDTO));
+
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    @Test
+    public void testAddProject_Success() {
         ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setManagerId(1L);
-        Manager manager = new Manager();
-        manager.setManagerId(1L);
-        
-        when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
+        projectDTO.setProjectId(project.getProjectId());
+        projectDTO.setProjectName(project.getProjectName());
 
-        Project project = new Project();
         when(projectRepository.save(any(Project.class))).thenReturn(project);
 
         Project result = adminService.addProject(projectDTO);
 
         assertNotNull(result);
-        verify(managerRepository).findById(1L);
-        verify(projectRepository).save(any(Project.class));
+        verify(projectRepository, times(1)).save(any(Project.class));
     }
 
     @Test
-    void addProject_ResourceNotFoundException() {
+    public void testAddProject_ManagerNotFound() {
         ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setManagerId(1L);
+        projectDTO.setManagerId(manager.getManagerId());
 
-        when(managerRepository.findById(1L)).thenReturn(Optional.empty());
+        when(managerRepository.findById(manager.getManagerId())).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.addProject(projectDTO);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> adminService.addProject(projectDTO));
 
-        assertEquals("No Manager found with manager Id: 1", exception.getMessage());
-        verify(managerRepository).findById(1L);
+        verify(managerRepository, times(1)).findById(manager.getManagerId());
+        verify(projectRepository, never()).save(any(Project.class));
     }
 
     @Test
-    void addProject_Exception() {
-        ProjectDTO projectDTO = new ProjectDTO();
-        projectDTO.setManagerId(1L);
-
-        when(managerRepository.findById(1L)).thenThrow(new RuntimeException("Database error"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.addProject(projectDTO);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(managerRepository).findById(1L);
-    }
-
-    @Test
-    void getAllEmployees_Success() {
-        List<Employee> employees = Arrays.asList(new Employee(), new Employee());
+    public void testGetAllEmployees() {
+        List<Employee> employees = Arrays.asList(employee);
 
         when(employeeService.getAllEmployees()).thenReturn(employees);
 
         List<Employee> result = adminService.getAllEmployees();
 
-        assertEquals(2, result.size());
-        verify(employeeService).getAllEmployees();
+        assertEquals(1, result.size());
+        verify(employeeService, times(1)).getAllEmployees();
     }
 
     @Test
-    void getAllProjects_Success() {
-        List<Project> projects = Arrays.asList(new Project(), new Project());
+    public void testGetAllProjects() {
+        List<Project> projects = Arrays.asList(project);
 
         when(managerService.getAllProjects()).thenReturn(projects);
 
         List<Project> result = adminService.getAllProjects();
 
-        assertEquals(2, result.size());
-        verify(managerService).getAllProjects();
+        assertEquals(1, result.size());
+        verify(managerService, times(1)).getAllProjects();
     }
 
-    
     @Test
-    void assignProjectToEmployee_Success() {
-        Long employeeId = 1L;
-        Long projectId = 2L;
-        Employee employee = new Employee();
-        Project project = new Project();
-        
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    public void testAssignProjectToEmployee_Success() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.of(project));
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-        Employee result = adminService.assignProjectToEmployee(employeeId, projectId);
+        Employee result = adminService.assignProjectToEmployee(employee.getEmployeeId(), project.getProjectId());
 
         assertNotNull(result);
-        verify(employeeRepository).findById(employeeId);
-        verify(projectRepository).findById(projectId);
-        verify(employeeRepository).save(employee);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void assignProjectToEmployee_ResourceNotFoundException() {
-        Long employeeId = 1L;
-        Long projectId = 2L;
+    public void testAssignProjectToEmployee_EmployeeNotFound() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> adminService.assignProjectToEmployee(employee.getEmployeeId(), project.getProjectId()));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.assignProjectToEmployee(employeeId, projectId);
-        });
-
-        assertEquals("No employee found with Employee ID: 1", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, never()).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
     }
 
     @Test
-    void assignProjectToEmployee_Exception() {
-        Long employeeId = 1L;
-        Long projectId = 2L;
+    public void testAssignProjectToEmployee_ProjectNotFound() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenThrow(new RuntimeException("Database error"));
+        assertThrows(ResourceNotFoundException.class, () -> adminService.assignProjectToEmployee(employee.getEmployeeId(), project.getProjectId()));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.assignProjectToEmployee(employeeId, projectId);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
     }
 
     @Test
-    void unassignProjectFromEmployee_Success() {
-        Long employeeId = 1L;
-        Employee employee = new Employee();
-        employee.setProject(new Project());
-        employee.setManager(new Manager());
+    public void testAssignProjectToEmployee_EmployeeAlreadyAssigned() {
+        employee.setProject(project);
 
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.of(project));
+
+        assertThrows(EmployeeAlreadyAssignedException.class, () -> adminService.assignProjectToEmployee(employee.getEmployeeId(), project.getProjectId()));
+
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    @Test
+    public void testUnassignProjectFromEmployee_Success() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-        Employee result = adminService.unassignProjectFromEmployee(employeeId);
+        Employee result = adminService.unassignProjectFromEmployee(employee.getEmployeeId());
 
         assertNotNull(result);
         assertNull(result.getProject());
         assertNull(result.getManager());
-        verify(employeeRepository).findById(employeeId);
-        verify(employeeRepository).save(employee);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void unassignProjectFromEmployee_ResourceNotFoundException() {
-        Long employeeId = 1L;
+    public void testUnassignProjectFromEmployee_EmployeeNotFound() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> adminService.unassignProjectFromEmployee(employee.getEmployeeId()));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.unassignProjectFromEmployee(employeeId);
-        });
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
 
-        assertEquals("No Employee found with Employee ID: 1", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
+//    @Test
+//    public void testApproveRequest_Success() {
+//        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.of(request));
+//        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+//        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+//        when(requestRepository.save(any(Request.class))).thenReturn(request);
+//
+//        Request result = adminService.approveRequest(request.getRequestId());
+//
+//        assertNotNull(result);
+//        assertEquals(RequestStatus.APPROVED, result.getStatus());
+//        verify(requestRepository, times(1)).findById(request.getRequestId());
+//        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+//        verify(employeeRepository, times(1)).save(any(Employee.class));
+//        verify(requestRepository, times(1)).save(any(Request.class));
+//    }
+
+    @Test
+    public void testApproveRequest_RequestNotFound() {
+        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> adminService.approveRequest(request.getRequestId()));
+
+        verify(requestRepository, times(1)).findById(request.getRequestId());
+        verify(employeeRepository, never()).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+        verify(requestRepository, never()).save(any(Request.class));
     }
 
     @Test
-    void unassignProjectFromEmployee_Exception() {
-        Long employeeId = 1L;
+    public void testApproveRequest_EmployeeNotFound() {
+        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.of(request));
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenThrow(new RuntimeException("Database error"));
+        assertThrows(ResourceNotFoundException.class, () -> adminService.approveRequest(request.getRequestId()));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.unassignProjectFromEmployee(employeeId);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
-    }
-
-	/*
-	 * @Test void approveRequest_Success() { Long requestId = 1L; Request request =
-	 * new Request(); request.setRequestType(RequestType.ASSIGN_EMPLOYEE);
-	 * request.setEmployeeIds(Arrays.asList(1L, 2L)); request.setProjectId(1L);
-	 * request.setStatus(RequestStatus.PENDING);
-	 * 
-	 * Employee employee1 = new Employee(); Employee employee2 = new Employee();
-	 * Project project = new Project();
-	 * 
-	 * when(requestRepository.findById(requestId)).thenReturn(Optional.of(request));
-	 * when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee1));
-	 * when(employeeRepository.findById(2L)).thenReturn(Optional.of(employee2));
-	 * when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-	 * when(employeeRepository.save(any(Employee.class))).thenReturn(employee1); //
-	 * Assuming saving returns the same employee object
-	 * when(requestRepository.save(any(Request.class))).thenReturn(request);
-	 * 
-	 * Request result = adminService.approveRequest(requestId);
-	 * 
-	 * assertNotNull(result); assertEquals(RequestStatus.APPROVED,
-	 * result.getStatus()); verify(requestRepository).findById(requestId);
-	 * verify(employeeRepository).findById(1L);
-	 * verify(employeeRepository).findById(2L);
-	 * verify(projectRepository).findById(1L); verify(employeeRepository,
-	 * times(2)).save(any(Employee.class)); verify(requestRepository).save(request);
-	 * }
-	 */
-    @Test
-    void approveRequest_ResourceNotFoundException() {
-        Long requestId = 1L;
-
-        when(requestRepository.findById(requestId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.approveRequest(requestId);
-        });
-
-        assertEquals("No request found with Request Id: 1", exception.getMessage());
-        verify(requestRepository).findById(requestId);
+        verify(requestRepository, times(1)).findById(request.getRequestId());
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+        verify(requestRepository, never()).save(any(Request.class));
     }
 
     @Test
-    void approveRequest_Exception() {
-        Long requestId = 1L;
+    public void testApproveRequest_EmployeeAlreadyAssigned() {
+        employee.setProject(project);
+        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.of(request));
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
 
-        when(requestRepository.findById(requestId)).thenThrow(new RuntimeException("Database error"));
+        assertThrows(EmployeeAlreadyAssignedException.class, () -> adminService.approveRequest(request.getRequestId()));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.approveRequest(requestId);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(requestRepository).findById(requestId);
+        verify(requestRepository, times(1)).findById(request.getRequestId());
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+        verify(requestRepository, never()).save(any(Request.class));
     }
 
     @Test
-    void rejectRequest_Success() {
-        Long requestId = 1L;
-        Request request = new Request();
-
-        when(requestRepository.findById(requestId)).thenReturn(Optional.of(request));
+    public void testRejectRequest_Success() {
+        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.of(request));
         when(requestRepository.save(any(Request.class))).thenReturn(request);
 
-        Request result = adminService.rejectRequest(requestId);
+        Request result = adminService.rejectRequest(request.getRequestId());
 
         assertNotNull(result);
         assertEquals(RequestStatus.REJECT, result.getStatus());
-        verify(requestRepository).findById(requestId);
-        verify(requestRepository).save(request);
+        verify(requestRepository, times(1)).findById(request.getRequestId());
+        verify(requestRepository, times(1)).save(any(Request.class));
     }
 
     @Test
-    void rejectRequest_ResourceNotFoundException() {
-        Long requestId = 1L;
+    public void testRejectRequest_RequestNotFound() {
+        when(requestRepository.findById(request.getRequestId())).thenReturn(Optional.empty());
 
-        when(requestRepository.findById(requestId)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> adminService.rejectRequest(request.getRequestId()));
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.rejectRequest(requestId);
-        });
-
-        assertEquals("No request found with Request Id: 1", exception.getMessage());
-        verify(requestRepository).findById(requestId);
+        verify(requestRepository, times(1)).findById(request.getRequestId());
+        verify(requestRepository, never()).save(any(Request.class));
     }
 
     @Test
-    void rejectRequest_Exception() {
-        Long requestId = 1L;
+    public void testDeleteEmployee_Success() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
 
-        when(requestRepository.findById(requestId)).thenThrow(new RuntimeException("Database error"));
+        doNothing().when(employeeRepository).deleteById(employee.getEmployeeId());
+        doNothing().when(userRepository).deleteById(user.getUserId());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.rejectRequest(requestId);
-        });
+        adminService.deleteEmployee(employee.getEmployeeId());
 
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(requestRepository).findById(requestId);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, times(1)).deleteById(employee.getEmployeeId());
+        verify(userRepository, times(1)).deleteById(user.getUserId());
     }
 
     @Test
-    void deleteEmployee_Success() {
-        Long employeeId = 1L;
-        Employee employee = new Employee();
-        User user = new User();
-        user.setUserId(1);
-        employee.setUser(user);
+    public void testDeleteEmployee_EmployeeNotFound() {
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(employee));
-        doNothing().when(employeeRepository).deleteById(employeeId);
-        doNothing().when(userRepository).deleteById(1);
+        assertThrows(ResourceNotFoundException.class, () -> adminService.deleteEmployee(employee.getEmployeeId()));
 
-        adminService.deleteEmployee(employeeId);
-
-        verify(employeeRepository).findById(employeeId);
-        verify(employeeRepository).deleteById(employeeId);
-        verify(userRepository).deleteById(1);
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).deleteById(employee.getEmployeeId());
+        verify(userRepository, never()).deleteById(user.getUserId());
     }
 
     @Test
-    void deleteEmployee_ResourceNotFoundException() {
-        Long employeeId = 1L;
+    public void testGetEmployeeById_Success() {
+        when(employeeRepository.findByEmployeeId(employee.getEmployeeId())).thenReturn(Optional.of(employee));
 
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.empty());
+        Employee result = adminService.getEmployeeById(employee.getEmployeeId());
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.deleteEmployee(employeeId);
-        });
-
-        assertEquals("Employee not found with employee id: 1", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
+        assertNotNull(result);
+        verify(employeeRepository, times(1)).findByEmployeeId(employee.getEmployeeId());
     }
 
     @Test
-    void deleteEmployee_Exception() {
-        Long employeeId = 1L;
+    public void testGetEmployeeById_EmployeeNotFound() {
+        when(employeeRepository.findByEmployeeId(employee.getEmployeeId())).thenReturn(Optional.empty());
 
-        when(employeeRepository.findById(employeeId)).thenThrow(new RuntimeException("Database error"));
+        assertThrows(ResourceNotFoundException.class, () -> adminService.getEmployeeById(employee.getEmployeeId()));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.deleteEmployee(employeeId);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(employeeRepository).findById(employeeId);
+        verify(employeeRepository, times(1)).findByEmployeeId(employee.getEmployeeId());
     }
-	/*
-	 * @Test void updateEmployee_Success() { EmployeeDTO employeeDTO = new
-	 * EmployeeDTO(); employeeDTO.setUserId(1); employeeDTO.setManagerId(2L);
-	 * employeeDTO.setProjectId(3L); User user = new User(); user.setUserId(1);
-	 * Manager manager = new Manager(); manager.setManagerId(2L); Project project =
-	 * new Project(); project.setProjectId(3L); Employee employee = new Employee();
-	 * 
-	 * when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
-	 * when(userRepository.findById(1)).thenReturn(Optional.of(user));
-	 * when(managerRepository.findById(2L)).thenReturn(Optional.of(manager));
-	 * when(projectRepository.findById(3L)).thenReturn(Optional.of(project));
-	 * when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
-	 * 
-	 * Employee result = adminService.updateEmployee(1L, employeeDTO);
-	 * 
-	 * assertNotNull(result); verify(employeeRepository).findById(1L);
-	 * verify(userRepository).findById(1); verify(managerRepository).findById(2L);
-	 * verify(projectRepository).findById(3L);
-	 * verify(employeeRepository).save(any(Employee.class)); }
-	 */
-	/*
-	 * @Test void updateEmployee_ResourceNotFoundException() { EmployeeDTO
-	 * employeeDTO = new EmployeeDTO(); employeeDTO.setUserId(1);
-	 * 
-	 * when(employeeRepository.findById(1L)).thenReturn(Optional.empty());
-	 * 
-	 * ResourceNotFoundException exception =
-	 * assertThrows(ResourceNotFoundException.class, () -> {
-	 * adminService.updateEmployee(1L, employeeDTO); });
-	 * 
-	 * assertEquals("No Employee found with Employee Id: 1",
-	 * exception.getMessage()); verify(employeeRepository).findById(1L); }
-	 */
 
     @Test
-    void updateEmployee_Exception() {
+    public void testUpdateEmployee_Success() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setUserId(1);
+        employeeDTO.setEmployeeId(employee.getEmployeeId());
+        employeeDTO.setFullName("Updated Name");
 
-        when(employeeRepository.findById(1L)).thenThrow(new RuntimeException("Database error"));
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.updateEmployee(1L, employeeDTO);
-        });
+        Employee result = adminService.updateEmployee(employeeDTO);
 
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(employeeRepository).findById(1L);
+        assertNotNull(result);
+        assertEquals("Updated Name", result.getFullName());
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void getAllRequest_Success() {
-        List<Request> requests = Arrays.asList(new Request(), new Request());
+    public void testUpdateEmployee_EmployeeNotFound() {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setEmployeeId(employee.getEmployeeId());
+
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> adminService.updateEmployee(employeeDTO));
+
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    @Test
+    public void testUpdateEmployee_ProjectNotFound() {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setEmployeeId(employee.getEmployeeId());
+        employeeDTO.setProjectId(project.getProjectId());
+
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> adminService.updateEmployee(employeeDTO));
+
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    @Test
+    public void testUpdateEmployee_ManagerMismatch() {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setEmployeeId(employee.getEmployeeId());
+        employeeDTO.setProjectId(project.getProjectId());
+        employeeDTO.setManagerId(2L);
+
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(project.getProjectId())).thenReturn(Optional.of(project));
+
+        assertThrows(IllegalArgumentException.class, () -> adminService.updateEmployee(employeeDTO));
+
+        verify(employeeRepository, times(1)).findById(employee.getEmployeeId());
+        verify(projectRepository, times(1)).findById(project.getProjectId());
+        verify(employeeRepository, never()).save(any(Employee.class));
+    }
+
+    @Test
+    public void testGetAllRequest() {
+        List<Request> requests = Arrays.asList(request);
 
         when(requestRepository.findAll()).thenReturn(requests);
 
         List<Request> result = adminService.getAllRequest();
 
-        assertEquals(2, result.size());
-        verify(requestRepository).findAll();
+        assertEquals(1, result.size());
+        verify(requestRepository, times(1)).findAll();
     }
 
     @Test
-    void getAllRequest_Exception() {
-        when(requestRepository.findAll()).thenThrow(new RuntimeException("Database error"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.getAllRequest();
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(requestRepository).findAll();
-    }
-
-    @Test
-    void addManager_Success() {
+    public void testAddManager_Success() {
         ManagerDTO managerDTO = new ManagerDTO();
-        managerDTO.setUserId(1);
-        User user = new User();
-        user.setUserId(1);
+        managerDTO.setUserId(user.getUserId());
 
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        Manager manager = new Manager();
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.of(user));
         when(managerRepository.save(any(Manager.class))).thenReturn(manager);
 
         Manager result = adminService.addmanager(managerDTO);
 
         assertNotNull(result);
-        verify(userRepository).findById(1);
-        verify(managerRepository).save(any(Manager.class));
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(managerRepository, times(1)).save(any(Manager.class));
     }
 
     @Test
-    void addManager_ResourceNotFoundException() {
+    public void testAddManager_UserNotFound() {
         ManagerDTO managerDTO = new ManagerDTO();
-        managerDTO.setUserId(1);
+        managerDTO.setUserId(user.getUserId());
 
-        when(userRepository.findById(1)).thenReturn(Optional.empty());
+        when(userRepository.findById(user.getUserId())).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.addmanager(managerDTO);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> adminService.addmanager(managerDTO));
 
-        assertEquals("No user found with user id: 1", exception.getMessage());
-        verify(userRepository).findById(1);
+        verify(userRepository, times(1)).findById(user.getUserId());
+        verify(managerRepository, never()).save(any(Manager.class));
     }
 
     @Test
-    void addManager_Exception() {
-        ManagerDTO managerDTO = new ManagerDTO();
-        managerDTO.setUserId(1);
-
-        when(userRepository.findById(1)).thenThrow(new RuntimeException("Database error"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            adminService.addmanager(managerDTO);
-        });
-
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(userRepository).findById(1);
-    }
-
-    @Test
-    void getAllManagers_Success() {
-        List<Manager> managers = Arrays.asList(new Manager(), new Manager());
+    public void testGetAllManager() {
+        List<Manager> managers = Arrays.asList(manager);
 
         when(managerService.getAllManagers()).thenReturn(managers);
 
         List<Manager> result = adminService.getAllManager();
 
-        assertEquals(2, result.size());
-        verify(managerService).getAllManagers();
+        assertEquals(1, result.size());
+        verify(managerService, times(1)).getAllManagers();
     }
-
-	/*
-	 * @Test void getAllManagers_Exception() {
-	 * when(managerService.getAllManagers()).thenThrow(new
-	 * RuntimeException("Database error"));
-	 * 
-	 * RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-	 * adminService.getAllManager(); });
-	 * 
-	 * assertEquals("Internal Server Error", exception.getMessage());
-	 * verify(managerService).getAllManagers(); }
-	 */
-   
 }

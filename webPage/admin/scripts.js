@@ -364,7 +364,7 @@ async function fetchAllManagers() {
         // });
 }
 
-function showRequests() {
+async function showRequests() {
 
     // Fetch and display requests here
 
@@ -373,10 +373,11 @@ function showRequests() {
     document.getElementById('request-list').style.display = 'block';
     document.getElementById('employee').style.display = 'none';
     document.getElementById('manager-list').style.display = 'none';
-    fetchRequests();
+    await fetchRequests();
 }
-pendingCounter = 0;
-actionTakenCounter = 0;
+
+
+
 async function fetchRequests() {
 
     const {status, data} = await fetchData('http://localhost:8080/api/admin/request', {
@@ -386,9 +387,14 @@ async function fetchRequests() {
     //     .then(response => response.json())
     //     .then(data => {
         if(status==200){
+            pendingCounter = 0;
+            actionTakenCounter = 0;
             const requestList = document.getElementById('request-list');
-            requestList.innerHTML = '<h3>Request List</h3><div class="pending" id="pending"></div>';  // Clear the list
-
+              // Clear the list
+            const pending = document.getElementById('pending');
+            pending.innerHTML='';
+            const actionTaken = document.getElementById('action-taken');
+            actionTaken.innerHTML='';
             data.forEach(request => {
                 const requestCard = document.createElement('div');
                 requestCard.className = 'request-card';
@@ -398,11 +404,15 @@ async function fetchRequests() {
 
                 if(request.status=="PENDING"){
                     if(pendingCounter==0){
+                        const requestStatus = document.createElement('div');
+                       
                         const title = '<h4>Pending Request</h4>';
-                        pending.append(title);
+                        requestStatus.innerHTML=title;
+
+                        pending.appendChild(requestStatus);
                         pendingCounter++;
                     }
-                    const pending = document.getElementById('pending');
+                    
                     const requestDetails = `
                     <div class="card"><table>
                      <div class="details">
@@ -414,7 +424,7 @@ async function fetchRequests() {
                      
                     <tr>
                             <td>Requester: ${requesterName}</td>
-                            <td>Employee IDs: ${request.employeeIds.join(', ')}</td>  
+                            <td>Employee IDs: ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>  
                             <td>Status: ${request.status}</td>   
                     </tr>
     
@@ -438,14 +448,12 @@ async function fetchRequests() {
                     
                      if(actionTakenCounter==0){
                         const requestStatus = document.createElement('div');
-                        requestStatus.className = 'action-taken';
-                        requestStatus.id= 'action-taken';
                         const title =`<h4>Action Taken Request</h4>`;
                         requestStatus.innerHTML=title;
-                        requestList.append(requestStatus);
+                        actionTaken.appendChild(requestStatus);
                         actionTakenCounter++;
                     }
-                    const actionTaken = document.getElementById('action-taken');
+                   
                     const requestDetails = `
                     <div class="card"><table>
                      <div class="details">
@@ -457,7 +465,7 @@ async function fetchRequests() {
                      
                     <tr>
                             <td>Requester: ${requesterName}</td>
-                            <td>Employee IDs: ${request.employeeIds.join(', ')}</td>  
+                             <td>Employee IDs: ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>    
                             <td>Status: ${request.status}</td>   
                     </tr>
     
@@ -716,9 +724,10 @@ async function handleRequest(chooseAction, requestId) {
         const{status,data} = await fetchData(url, {
             method: 'PUT',
         });
-        if(status==200){
-            fetchRequests();
-        }
+        // if(status==200 || status==201){
+        //      fetchRequests();
+        //     //showRequests();
+        // }
         // fetch(url, {
         //     method: 'PUT',
         //     headers: headers,
@@ -727,9 +736,10 @@ async function handleRequest(chooseAction, requestId) {
         const{status,data} = fetchData(url, {
             method: 'PUT',
         });
-        if(status==200){
-            fetchRequests();
-        }
+        // if(status==200 || status==201){
+        //     fetchRequests();
+        //     // showRequests();
+        // }
         // fetch(url, {
         //     method: 'PUT',
         //     headers: headers,
@@ -737,6 +747,7 @@ async function handleRequest(chooseAction, requestId) {
         //     alert("Error in request cancel " + error)
         // })
     }
+    fetchRequests();
     // Implement logic to handle request action (accept/reject)
     console.log(`Request ID: ${requestId}, Action: ${chooseAction}`);
     // You can make API call to update request status here

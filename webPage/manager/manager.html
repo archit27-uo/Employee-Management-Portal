@@ -88,7 +88,10 @@
                <h3>Your Requests</h3>
                <button onclick="openRequestModal()" class="button">Add Request</button>
             </div>
-            <div class="request-list" id="request-list"></div>
+            <div class="request-list" id="request-list">
+                <div class="pending" id="pending"></div>
+                <div class="action-taken" id="action-taken"></div>
+            </div>
         </div>
 
         <div id="profile-page" style="display: none;">
@@ -136,7 +139,7 @@
                     <label for="assignProjectId">Project ID:</label>
                     <input type="number" id="assignProjectId" name="assignProjectId" required>
                     <input type="hidden" id="assignEmployeeId" name="assignEmployeeId">
-                    <button type="submit">Assign Project</button>
+                    <button type="submit">Request</button>
                 </form>
             </div>
         </div>

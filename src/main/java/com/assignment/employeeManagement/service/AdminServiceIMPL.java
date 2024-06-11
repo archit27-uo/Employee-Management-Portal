@@ -62,21 +62,25 @@ public class AdminServiceIMPL implements AdminService{
 			User user = userRepository.findById(userId)
 					.orElseThrow(() -> new ResourceNotFoundException("No user found with user id: " + userId));
 			
-		    Long managerId = employeeDTO.getManagerId();
-		    Manager manager = null;
-		    if (managerId != null) {
-		        manager = managerRepository.findById(managerId)
-		                .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager ID: "+managerId));
-		    }
+			Project project = null;
+			Manager manager = null;
+			if (employeeDTO.getProjectId() != null) {
+	            project = projectRepository.findById(employeeDTO.getProjectId())
+	                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with project Id: "+employeeDTO.getProjectId()));
+	          
+	             manager = project.getManager();
+	            if(employeeDTO.getManagerId()!= manager.getManagerId()) {
+	            	throw new IllegalArgumentException("Manager Id does not match with project manager id");
+	            }
+	            
+	        } 
 
-		    Long projectId = employeeDTO.getProjectId();
-		    Project project = null;
-		    if (projectId != null) {
-		        project = projectRepository.findById(projectId)
-		                .orElseThrow(() -> new ResourceNotFoundException("No project found with project ID: "+projectId));
-		    }
+	        if (employeeDTO.getManagerId() != null && project==null) {
+	             manager = managerRepository.findById(employeeDTO.getManagerId())
+	                    .orElseThrow(() -> new ResourceNotFoundException("No manager found with manager Id: "+employeeDTO.getManagerId()));
+	            
+	        }
 			
-	        
 	        Employee employee = new Employee(
 					employeeDTO.getEmployeeId(),
 					user,
@@ -94,7 +98,7 @@ public class AdminServiceIMPL implements AdminService{
             throw ex;
         } catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
+            throw ex;
         }
 		
 		
@@ -162,9 +166,8 @@ public class AdminServiceIMPL implements AdminService{
             throw ex;
         } catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
+            throw ex;
         }
-		
 	}
 
 	@Override
@@ -180,7 +183,7 @@ public class AdminServiceIMPL implements AdminService{
             throw ex;
         } catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
+            throw ex;
         }
 	}
 
@@ -222,8 +225,8 @@ public class AdminServiceIMPL implements AdminService{
             throw ex;
         } catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
-        }
+            throw ex;
+            }
 		
 		
 	}
@@ -307,11 +310,10 @@ public class AdminServiceIMPL implements AdminService{
         	throw ex;
         }catch (Exception ex) {
             logger.error("Exception: {}", ex.getMessage());
-            throw new RuntimeException("Internal Server Error");
+            throw ex;
         }
         
 	}
-
 
 
 	@Override

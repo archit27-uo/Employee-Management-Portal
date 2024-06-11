@@ -1,13 +1,15 @@
 package com.assignment.employeeManagement.exception;
 
-import com.assignment.employeeManagement.exception.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class GlobalExceptionHandlerTest {
 
@@ -19,7 +21,7 @@ public class GlobalExceptionHandlerTest {
         WebRequest request = Mockito.mock(WebRequest.class);
         ResponseEntity<?> response = globalExceptionHandler.resourceNotFoundException(ex, request);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("Resource not found", response.getBody());
+        assertEquals("Resource not found", ((Map<String, Object>) response.getBody()).get("message"));
     }
 
     @Test
@@ -28,7 +30,7 @@ public class GlobalExceptionHandlerTest {
         WebRequest request = Mockito.mock(WebRequest.class);
         ResponseEntity<?> response = globalExceptionHandler.employeeAlreadyAssignedException(ex, request);
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertEquals("Employee already assigned", response.getBody());
+        assertEquals("Employee already assigned", ((Map<String, Object>) response.getBody()).get("message"));
     }
 
     @Test
@@ -37,7 +39,7 @@ public class GlobalExceptionHandlerTest {
         WebRequest request = Mockito.mock(WebRequest.class);
         ResponseEntity<?> response = globalExceptionHandler.managerAlreadyAssignedException(ex, request);
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertEquals("Manager already assigned", response.getBody());
+        assertEquals("Manager already assigned", ((Map<String, Object>) response.getBody()).get("message"));
     }
 
     @Test
@@ -46,7 +48,7 @@ public class GlobalExceptionHandlerTest {
         WebRequest request = Mockito.mock(WebRequest.class);
         ResponseEntity<?> response = globalExceptionHandler.illegalArgumentException(ex, request);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Illegal argument", response.getBody());
+        assertEquals("Illegal argument", ((Map<String, Object>) response.getBody()).get("message"));
     }
 
     @Test
@@ -55,6 +57,6 @@ public class GlobalExceptionHandlerTest {
         WebRequest request = Mockito.mock(WebRequest.class);
         ResponseEntity<?> response = globalExceptionHandler.globalExceptionHandler(ex, request);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Internal server error", response.getBody());
+        assertEquals("Internal Server Error", ((Map<String, Object>) response.getBody()).get("message"));
     }
 }
