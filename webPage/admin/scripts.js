@@ -1,5 +1,3 @@
-
-
 document.addEventListener("DOMContentLoaded", function () {
 
     fetchEmployees('all');
@@ -14,7 +12,7 @@ headers.set('Content-Type', 'application/json');
 async function fetchData(url, options={}) {
     try {
         const response = await fetch(url, { headers, ...options });
-        console.log(response.status);
+        
         if (response.status!=200 && response.status!=201){ 
             const errorData = await response.json();
             const errorMessage = errorData.message || 'Failed to update employee';
@@ -25,7 +23,6 @@ async function fetchData(url, options={}) {
     return {status : response.status, data };
         
     } catch (error) {
-       // console.error('API Error:', error);
         showMessage(`Failed due to: ${error.message}`, 'error');
         
     }
@@ -40,9 +37,7 @@ function closeAddUserModal() {
 }
 
 function logout() {
-    // Clear the auth token from local storage
     localStorage.removeItem('authToken');
-
     window.location.href = '../login/login.html';
 }
 
@@ -67,12 +62,9 @@ async function fetchEmployees(filter) {
 
     const {status, data} = await fetchData('http://localhost:8080/api/admin/employee', { method:'GET' });
     
-    // fetch()
-    //     .then(response => response.json())
-    //     .then(data => {
+    
             const employeeList = document.getElementById('employee-list');
-            employeeList.innerHTML = '';  // Clear the list
-
+            employeeList.innerHTML = ''; 
             data.forEach(employee => {
                 if (filter === 'all' || (filter === 'assigned' && employee.project) || (filter === 'unassigned' && !employee.project)) {
                     const employeeCard = document.createElement('div');
@@ -83,22 +75,22 @@ async function fetchEmployees(filter) {
                 <div class="card">
                     <div class="details">
                     <p id="empname">${employee.fullName}</p>
-                      <div>
-                       <i onclick="editEmployee(${employee.employeeId})" class="edit-icon" >📝</i>
-                       <i onclick="deleteEmployee(${employee.employeeId})" class="delete-icon">🗑️</i>
-                      </div>
+                    <div>
+                        <i onclick="editEmployee(${employee.employeeId})" class="fas fa-pencil-alt edit-icon"></i>
+                        <i onclick="deleteEmployee(${employee.employeeId})" class="fas fa-trash delete-icon"></i>
+                    </div>
                     </div>
                 
                     <div class="actions">
                      <div class="lst">
                      <div>
-                      <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
-                      <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                      <p><b>Project</b> : ${employee.project ? employee.project.projectName : 'None'}</p>
+                      <p><b>Manager</b> : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                       </div> 
                      </div> 
                     </div>
 
-                    <p>Skills : ${employee.skills.join(', ')}</p>
+                    <p><b>Skills</b> : ${employee.skills.join(', ')}</p>
                 </div>`;
 
 
@@ -107,23 +99,23 @@ async function fetchEmployees(filter) {
                 <div class="card">
                         <div class="details">
                          <p id="empname">${employee.fullName}</p>
-                         <div>
-                          <i onclick="editEmployee(${employee.employeeId})" class="edit-icon" >📝</i>
-                          <i onclick="deleteEmployee(${employee.employeeId})" class="delete-icon">🗑️</i>
-                         </div>
+                          <div>
+                            <i onclick="editEmployee(${employee.employeeId})" class="fas fa-pencil-alt edit-icon"></i>
+                            <i onclick="deleteEmployee(${employee.employeeId})" class="fas fa-trash delete-icon"></i>
+                        </div>
                         </div>
 
                         <div class="actions">
                         
                         <div class="lst">
                           <div>
-                           <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
-                           <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                           <p><b>Project</b> : ${employee.project ? employee.project.projectName : 'None'}</p>
+                           <p><b>Manager</b> : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                           </div>  
                            <button onclick="unassignProject(${employee.employeeId})">Unassign</button> 
                           </div>
 
-                        <p>Skills : ${employee.skills.join(', ')}</p>
+                        <p><b>Skills</b> : ${employee.skills.join(', ')}</p>
                         </div>
                 </div>        
                     `;
@@ -133,20 +125,20 @@ async function fetchEmployees(filter) {
                 <div class="card">    
                         <div class="details">
                     <p id="empname">${employee.fullName}</p>
-                    <div>
-                    <i onclick="editEmployee(${employee.employeeId})" class="edit-icon" >📝</i>
-                    <i onclick="deleteEmployee(${employee.employeeId})" class="delete-icon">🗑️</i>
+                     <div>
+                        <i onclick="editEmployee(${employee.employeeId})" class="fas fa-pencil-alt edit-icon"></i>
+                        <i onclick="deleteEmployee(${employee.employeeId})" class="fas fa-trash delete-icon"></i>
                     </div>
                  </div>
                 <div class="actions">
                 <div class="lst">
                 <div>
-                <p>Project : ${employee.project ? employee.project.projectName : 'None'}</p>
-                <p>Manager : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                <p><b>Project</b> : ${employee.project ? employee.project.projectName : 'None'}</p>
+                <p><b>Manager</b> : ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                 </div>  
                 <button onclick="openAssignProjectModal(${employee.employeeId})">Assign</button> 
                 </div>
-                <p>Skills : ${employee.skills.join(', ')}</p>
+                <p><b>Skills</b> : ${employee.skills.join(', ')}</p>
                 </div>
                 </div>
                     `;
@@ -155,11 +147,6 @@ async function fetchEmployees(filter) {
                     employeeList.appendChild(employeeCard);
                 }
             });
-        // })
-        // .catch(error => {
-        //     console.error('Error fetching employee data:', error);
-        //     showMessage('Failed to fetch employee data: ' + error.message, 'error');
-        // });
         
 }
 
@@ -184,28 +171,10 @@ async function unassignProject(employeeId) {
     const {status, response} = await fetchData(url, {
         method: 'PUT'
     })
-    // fetch(url, {
-    //     method: 'PUT',
-    //     headers: headers
-    // })
-    //     .then(response => {
-        //     if (response.ok) {
-        //         return response.text();
-        //     } else {
-        //         throw new Error('Failed to unassign project');
-        //     }
-        // })
-    
         if(status==200){
             fetchEmployees('assigned');
             showMessage("Unassigned project successfully", "success");
-        }
-        
-        // .catch(error => {
-        //     console.error('Error unassigning project:', error);
-        //     showMessage('Failed to unassign project: ' + error.message, 'error');
-        // });
-       
+        }      
 }
 function showProjects() {
 
@@ -221,34 +190,49 @@ function showProjects() {
 async function fetchProjects() {
 
     const {status, data} = await fetchData('http://localhost:8080/api/admin/projects','GET')
-    // fetch('http://localhost:8080/api/admin/projects', {
-    //     method: 'GET',
-    //     headers: headers
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
+
             if(status==200){
                 const projectList = document.getElementById('project-list');
             projectList.innerHTML = '';
             data.forEach(project => {
-                const projectCard = document.createElement('div');
-                projectCard.classList.add('project-card');
-                projectCard.setAttribute('data-project-id', project.projectId);
+                const projectAccordion = document.createElement('div');
+                projectAccordion.className = 'accordion-item';
+                projectAccordion.setAttribute('data-project-id', project.projectId);
+     
 
                 let managerInfo = project.manager ?
-                    `<p>Manager: ${project.manager.user.userName}</p>` :
-                    `<p>No manager assigned</p>`;
+                    `<span><b>Manager</b>: ${project.manager.user.userName}</span>` :
+                    `<span>No manager assigned</span>`;
 
-                projectCard.innerHTML = `
-            <div class="card">
-            <div class="project-info">
-                    <h3>${project.projectName}</h3>
-                    ${managerInfo}
-                </div>
-                <button class="expand-btn" onclick="fetchEmployeesByProject(${project.projectId})">Expand</button>
-            </div>`;
-                projectList.appendChild(projectCard);
+            projectAccordion.innerHTML = `<button class="accordion"  onclick="fetchEmployeesByProject(${project.projectId})"> <b>Project Id</b> : ${project.projectId}   | ${managerInfo}</button>
+            <div class="panel card" data-panel-id="${project.projectId}"></div>`;
+                   //     const projectCard = document.createElement('div');
+            //     projectCard.classList.add('project-card');
+            //     projectCard.setAttribute('data-project-id', project.projectId);
+            // <div class="card">
+            // <div class="project-info">
+            //         <h3>${project.projectName}</h3>
+            //         ${managerInfo}
+            //     </div>
+            //     <button class="expand-btn" onclick="fetchEmployeesByProject(${project.projectId})">Expand</button>
+            // </div>`;
+                projectList.appendChild(projectAccordion);
             });
+            var acc = document.getElementsByClassName("accordion");
+            var i;
+            
+            for (i = 0; i < acc.length; i++) {
+              acc[i].addEventListener("click", function() {
+               
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                  panel.style.maxHeight = null;
+                } else {
+                  panel.style.maxHeight = panel.scrollHeight + "px";
+                } 
+              });
+            }
             }
             
       
@@ -263,48 +247,54 @@ async function fetchEmployeesByProject(projectId) {
     if(status==200){
         displayEmployees(projectId, data);
     }
-    // fetch()
-    //     .then(response => {
-    //         if (!response.ok) {
-    //             throw new Error('Failed to fetch employees');
-    //         }
-    //         return response.json();
-    //     })
-    //     .then(employees => {
-            
-    //     })
-    //     .catch(error => {
-    //         console.error('Error fetching employees:', error);
-    //         showMessage('Error fetching employees: ' + error.message, 'error');
-    //     });
+   
 }
 
-// Function to display employees under the relevant project
+// Function to display employees 
 function displayEmployees(projectId, employees) {
-    const projectCard = document.querySelector(`[data-project-id="${projectId}"]`);
+    // const container = document.getElementById('employee-cards-container');
+    // container.innerHTML = ''; // Clear any existing cards
+
+    // employees.forEach(employee => {
+    //     const employeeCard = document.createElement('div');
+    //     employeeCard.className = 'employee-small-card';
+
+    //     const employeeDetails = `
+    //         <tr class="employee-id">Employee ID: ${employee.employeeId}</tr>
+    //         <tr class="employee-name">Full Name: ${employee.fullName}</tr>
+    //         <tr class="employee-skills">Skills: ${employee.skills.join(', ')}</tr>
+    //     `;
+
+    //     employeeCard.innerHTML = employeeDetails;
+    //     container.appendChild(employeeCard);
+    // });
+    const projectCard = document.querySelector(`[data-panel-id="${projectId}"]`);
     let employeeList = projectCard.querySelector('.employee-list');
 
-    // If the employee list doesn't exist, create it
     if (!employeeList) {
         employeeList = document.createElement('div');
         employeeList.classList.add('employee-list');
         projectCard.appendChild(employeeList);
     }
 
-    // Clear previous employee list content
-    employeeList.innerHTML = '';
+    employeeList.innerHTML = ''; // Clear any existing cards
 
-    // Create a list of employees
     employees.forEach(employee => {
         const employeeCard = document.createElement('div');
-        employeeCard.classList.add('employee-card');
+        employeeCard.className = 'employee-small-card';
 
         let skills = employee.skills.join(', ');
 
         employeeCard.innerHTML = `
-            <p>Employee ID: ${employee.employeeId}</p>
-            <p>Full Name: ${employee.fullName}</p>
-            <p>Skills: ${skills}</p>
+            <div class="employee-id">Employee ID: ${employee.employeeId}</div>
+                    <div class="employee-details">
+                        <div class="detail-item">
+                            <span class="detail-title">Name:</span> ${employee.fullName}
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-title">Skills:</span> ${skills}
+                        </div>
+                    </div>
         `;
 
         employeeList.appendChild(employeeCard);
@@ -312,9 +302,7 @@ function displayEmployees(projectId, employees) {
 }
 
 function showProjects() {
-    // Fetch and display projects here
     fetchProjects();
-    // Show project list and hide other lists
     document.getElementById('project').style.display = 'block';
     document.getElementById('request-list').style.display = 'none';
     document.getElementById('employee').style.display = 'none';
@@ -333,12 +321,10 @@ function showManagers() {
 async function fetchAllManagers() {
 
     const {status, data} = await fetchData('http://localhost:8080/api/admin/manager',{method:'GET'});
-    // fetch(, { headers: headers })
-    //     .then(response => response.json())
-    //     .then(data => {
+
         if(status==200){
             const managerList = document.getElementById('manager-list');
-            managerList.innerHTML = '<div class="gap"><h3>Manager List</h3></div>';  // Clear the list
+            managerList.innerHTML = '<div class="gap"><h3>Manager List</h3></div>'; 
             data.forEach(manager => {
                 const managerCard = document.createElement('div');
                 managerCard.className = 'manager-card';
@@ -347,7 +333,7 @@ async function fetchAllManagers() {
             <div class="card">
                 <div class="details">
                 <h3>${manager.user.userName}</h3>
-                <p>Email : ${manager.user.userEmail}</p>
+                <p><b>Email</b> : ${manager.user.userEmail}</p>
             </div>
             </div>
                 `;
@@ -356,19 +342,10 @@ async function fetchAllManagers() {
                 managerList.appendChild(managerCard);
             });
         }
-            
-        // })
-        // .catch(error => {
-        //     console.error('Error fetching manager list:', error);
-        //     showMessage('Failed to fetch mamnager list: ' + error.message, 'error');
-        // });
 }
 
 async function showRequests() {
 
-    // Fetch and display requests here
-
-    // Show request list and hide other lists
     document.getElementById('project').style.display = 'none';
     document.getElementById('request-list').style.display = 'block';
     document.getElementById('employee').style.display = 'none';
@@ -383,14 +360,12 @@ async function fetchRequests() {
     const {status, data} = await fetchData('http://localhost:8080/api/admin/request', {
         method: 'GET'
     });
-    // fetch()
-    //     .then(response => response.json())
-    //     .then(data => {
+    
         if(status==200){
             pendingCounter = 0;
             actionTakenCounter = 0;
             const requestList = document.getElementById('request-list');
-              // Clear the list
+            
             const pending = document.getElementById('pending');
             pending.innerHTML='';
             const actionTaken = document.getElementById('action-taken');
@@ -406,7 +381,7 @@ async function fetchRequests() {
                     if(pendingCounter==0){
                         const requestStatus = document.createElement('div');
                        
-                        const title = '<h4>Pending Request</h4>';
+                        const title = '<h3>Pending Request List</h3>';
                         requestStatus.innerHTML=title;
 
                         pending.appendChild(requestStatus);
@@ -418,19 +393,19 @@ async function fetchRequests() {
                      <div class="details">
     
                     <tr>   
-                            <td>Request ID: ${request.requestId}</td>
-                            <td>Project ID: ${request.projectId}</td>
+                            <td><b>Request ID:</b> ${request.requestId}</td>
+                            <td><b>Project ID:</b> ${request.projectId}</td>
                     </tr>     
                      
                     <tr>
-                            <td>Requester: ${requesterName}</td>
-                            <td>Employee IDs: ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>  
-                            <td>Status: ${request.status}</td>   
+                            <td><b>Requester:</b> ${requesterName}</td>
+                            <td><b>Employee IDs:</b> ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>  
+                            <td><b>Status:</b> ${request.status}</td>   
                     </tr>
     
                     <tr>
-                            <td>Request Type: ${request.requestType}</td>
-                            <td>Request Details: ${request.requestDetails}</td>
+                            <td><b>Request Type:</b> ${request.requestType}</td>
+                            <td><b>Request Details:</b> ${request.requestDetails}</td>
                             <td align=center>
                             <i class="fas fa-check" style="color: green; cursor: pointer;" onclick="handleRequest('approve', ${request.requestId})"></i>
                             &nbsp;&nbsp;
@@ -448,7 +423,7 @@ async function fetchRequests() {
                     
                      if(actionTakenCounter==0){
                         const requestStatus = document.createElement('div');
-                        const title =`<h4>Action Taken Request</h4>`;
+                        const title =`<h3>Action Taken Request</h3>`;
                         requestStatus.innerHTML=title;
                         actionTaken.appendChild(requestStatus);
                         actionTakenCounter++;
@@ -459,19 +434,19 @@ async function fetchRequests() {
                      <div class="details">
     
                     <tr>   
-                            <td>Request ID: ${request.requestId}</td>
-                            <td>Project ID: ${request.projectId}</td>
+                            <td><b>Request ID:</b> ${request.requestId}</td>
+                            <td><b>Project ID:</b> ${request.projectId}</td>
                     </tr>     
                      
                     <tr>
-                            <td>Requester: ${requesterName}</td>
-                             <td>Employee IDs: ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>    
-                            <td>Status: ${request.status}</td>   
+                            <td><b>Requester:</b> ${requesterName}</td>
+                             <td><b>Employee IDs:</b> ${Array.isArray(request.employeeIds) && request.employeeIds.length > 0 ? request.employeeIds.join(', ') : (request.employeeIds || 'No Employee IDs')}</td>    
+                            <td><b>Status:</b> ${request.status}</td>   
                     </tr>
     
                     <tr>
-                            <td>Request Type: ${request.requestType}</td>
-                            <td>Request Details: ${request.requestDetails}</td>
+                            <td><b>Request Type:</b> ${request.requestType}</td>
+                            <td><b>Request Details:</b> ${request.requestDetails}</td>
                            
                     </tr>       
     
@@ -483,12 +458,7 @@ async function fetchRequests() {
                 }  
             });
         }
-            
-        // })
-        // .catch(error => {
-        //     console.error('Error in fetching requests:', error);
-        //     showMessage('Failed to fetch request: ' + error.message, 'error');
-        // });
+ 
 }
 
 
@@ -508,37 +478,23 @@ async function assignProject(event) {
     const {status, data} = await fetchData(url, {
         method: 'PUT'
     });
-    // fetch()
-    //     .then(response => {
+
             if (status==200) {
                 showMessage(`Assign project to employee with ID: ${employeeId}`,'success')
                 closeAssignProjectModal();
                 fetchEmployees('unassigned')
             } 
-        // })
-        // .then(message => {
-        //     
-        // })
-        // .catch(error => {
-        //     console.error('Error in assigning project:', error);
-        //     showMessage('Failed to assign project: ' + error.message, 'error');
-        // });
+      
     
 }
 
 async function editEmployee(employeeId) {
     const {status, data} = await fetchData(`http://localhost:8080/api/admin/employee/${employeeId}`,{method:'GET'});
-    // fetch(, { headers: headers })
-    //     .then(response => response.json())
+    
     if(status==200){
         openEditEmployeeModal(data);
     }
-       
-        // .then(employee => )
-        // .catch(error => {
-        //     console.error('Error fetching employee detail:', error);
-        //     showMessage('Failed to fetch employee detail: ' + error.message, 'error');
-        // });
+      
 }
 
 async function submitEditEmployeeForm(event) {
@@ -563,27 +519,12 @@ async function submitEditEmployeeForm(event) {
         method: 'PUT',
         body: JSON.stringify(employeeData)
     });
-    // fetch(, {
-    //     method: 'PUT',
-    //     headers: headers,
-    //     body: JSON.stringify(employeeData)
-    // })
-    //     .then(response => {
             if (status==200) {
                 closeEditEmployeeModal();
-                fetchEmployees('all')
-;                return data.text();
+                fetchEmployees('all');
+                return data.text();
             }
-        //     }else{
-        //         return response.json().then(errorResponse => {
-        //             throw new Error(errorResponse.message || 'Failed to update employee');
-        //         });
-        //     }
-        // })
-        // .catch(error => {
-        //     console.error('Error updating employee:', error);
-        //     showMessage('Failed to update employee: ' + error.message, 'error');
-        // });
+
 }
 
 async function deleteEmployee(employeeId) {
@@ -599,31 +540,27 @@ async function deleteEmployee(employeeId) {
     }catch(error){
         console.log(error);
     }
-    
-
-    // fetch()
-    //     .then(response => response.text())
-    //     .then(message => {
-       
-               
-                // Optionally, refresh the employee list or remove the deleted employee's card from the DOM
-               
-               
-           
-            //  else {
-            //     return response.json().then(errorResponse => {
-            //         throw new Error(errorResponse.message || 'Failed to update employee');
-            //     });
-            // }
-        // })
-        // .catch(error => {
-        //     console.error('Error in deleting employee:', error);
-        //     showMessage('Failed to delete employee: ' + error.message, 'error');
-        // });
-   
 }
 
 function filterEmployees(filter) {
+    const filterBar = document.getElementById('filter-bar');
+    const buttons = filterBar.getElementsByTagName('button');
+
+    for (let button of buttons) {
+        button.classList.remove('active');
+    }
+
+    switch (filter) {
+        case 'all':
+            buttons[0].classList.add('active');
+            break;
+        case 'assigned':
+            buttons[1].classList.add('active');
+            break;
+        case 'unassigned':
+            buttons[2].classList.add('active');
+            break;
+    }
     fetchEmployees(filter);
 }
 function openAddEmployeeModal() {
@@ -639,7 +576,7 @@ function submitUserForm(event) {
 
     const user = {
         userName: document.getElementById('userName').value,
-        userEmail: document.getElementById('userEmail').value,
+        userEmail : document.getElementById('userEmail').value + '@nucleusteq.com',
         userPassword: document.getElementById('userPassword').value,
         userRole: document.getElementById('userRole').value
     };
@@ -699,13 +636,6 @@ async function submitEmployeeForm(event) {
         method: 'POST',
         body: JSON.stringify(employee)
     });
-    // fetch('http://localhost:8080/api/admin/employee', {
-    //     method: 'POST',
-    //     headers: headers,
-    //     body: JSON.stringify(employee)
-    // })
-        // .then(response => response.json())
-            //alert('Employee added successfully');
             if(status==201){
             fetchEmployees('all');
             showMessage('Employee added successfully', 'success');
@@ -724,33 +654,15 @@ async function handleRequest(chooseAction, requestId) {
         const{status,data} = await fetchData(url, {
             method: 'PUT',
         });
-        // if(status==200 || status==201){
-        //      fetchRequests();
-        //     //showRequests();
-        // }
-        // fetch(url, {
-        //     method: 'PUT',
-        //     headers: headers,
-        // })
+       
     } else {
         const{status,data} = fetchData(url, {
             method: 'PUT',
         });
-        // if(status==200 || status==201){
-        //     fetchRequests();
-        //     // showRequests();
-        // }
-        // fetch(url, {
-        //     method: 'PUT',
-        //     headers: headers,
-        // }).catch(error => {
-        //     alert("Error in request cancel " + error)
-        // })
+       
     }
     fetchRequests();
-    // Implement logic to handle request action (accept/reject)
-    console.log(`Request ID: ${requestId}, Action: ${chooseAction}`);
-    // You can make API call to update request status here
+    
 }
 
 function openAddProjectModal() {
@@ -778,12 +690,7 @@ async function submitAddProjectForm(event) {
         method: 'POST',
         body: JSON.stringify(newProject)
     })
-    // fetch(, {
-    //     method: 'POST',
-    //     headers: headers,
-    //     body: JSON.stringify(newProject)
-    // })
-        // .then(response => {
+ 
             if (status==201) {
                 showMessage('Project added successfully', 'success');
                 closeAddProjectModal();
@@ -791,11 +698,7 @@ async function submitAddProjectForm(event) {
             } else {
                 throw new Error('Failed to add project');
             }
-        // })
-        // .catch(error => {
-        //     console.error('Error in adding project:', error);
-        //     showMessage('Failed to add project: ' + error.message, 'error');
-        // });
+      
 }
 
 // Function to display messages
@@ -804,7 +707,7 @@ function showMessage(message, type) {
     messageElement.textContent = message;
     messageElement.className = type === 'success' ? 'success-message' : 'error-message';
     
-    // Styling for success and error messages
+  
     if (type === 'success') {
         messageElement.style.backgroundColor = 'green';
         messageElement.style.color = 'white';
@@ -813,7 +716,7 @@ function showMessage(message, type) {
         messageElement.style.color = 'white';
     }
     
-    // Common styles for the message element
+
     messageElement.style.position = 'fixed';
     messageElement.style.top = '20px';
     messageElement.style.left = '50%';

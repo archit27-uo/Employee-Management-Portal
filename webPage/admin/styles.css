@@ -29,6 +29,56 @@ h3 {
 /* ----------------Card-Container---------------- */
 
 .card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.card-body {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #555555;
+}
+
+.card-footer {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.card-footer button {
+    background-color: #0175b4;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.card-footer button:hover {
+    background-color: #005a8c;
+}
+
+/* .card {
     background-color: #f8f7f7dc;
     border: none;
     margin-bottom: 2rem;
@@ -37,7 +87,7 @@ h3 {
     justify-content: space-between;
     flex-direction: column;
     box-shadow: 0px 1px 2px 0px #d8d8d8;
-}
+} */
 
 /* --------------------Side-Bar---------------- */
 .sidebar {
@@ -196,6 +246,13 @@ h3 {
     color: #0175b4;
 }
 
+.filter-bar button.active {
+    background-color: #0175b4;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 15px;
+}
+
 /* ------------Request-Card--------------- */
 
 td {
@@ -325,3 +382,138 @@ td {
     background-color: #003566f2;
     color: #fffffff3;
 }
+
+/*---------------------------------------email container------------------------------------------*/
+
+.email-container {
+    display: flex;
+    align-items: center;
+}
+.email-container input[type="email"] {
+    flex-grow: 1;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+}
+.email-suffix {
+    background-color: #A1AEB1;
+      color: white;
+      padding: 7px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      white-space: nowrap;
+}
+
+
+.edit-icon {
+    color: #0095ff; /* Blue color for edit icon */
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.delete-icon {
+    color: #FF0000; /* Red color for delete icon */
+    cursor: pointer;
+}
+
+.edit-icon:hover, .delete-icon:hover {
+    opacity: 0.7; /* Slight transparency on hover */
+}
+
+/*-----------------------------------------------------------------------------------------*/
+.employee-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px; /* To create space between project card and employee list */
+}
+
+.employee-small-card {
+    width: 200px; /* Fixed width */
+    height: 200px; /* Fixed height */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    padding: 16px;
+    background-color: #fff;
+    transition: transform 0.3s;
+    margin-bottom: 10px;
+}
+
+.employee-small-card:hover {
+    transform: scale(1.05);
+}
+
+.employee-id {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #0175b4;
+    text-align: center;
+}
+
+.employee-details {
+    width: 100%;
+    text-align: left;
+}
+
+.detail-item {
+    margin-bottom: 8px;
+}
+
+.detail-title {
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.employee-name, .employee-skills {
+    font-size: 1rem;
+    color: #333;
+}
+
+
+/*---------------------------------Accordion------------------------------------*/
+
+.accordion {
+    background-color: #002f49f3;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 14px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+  }
+  
+  .active, .accordion:hover {
+    background-color: #002f49dc;
+  }
+  
+  .accordion:after {
+    content: '\002B';
+    color: #fbfbfb;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+  }
+  
+  .active:after {
+    content: "\2212";
+  }
+  
+  .panel {
+    margin-top: 10px ;
+    padding: 0px 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+
+  .sts{
+    margin-bottom: 10px;
+  }

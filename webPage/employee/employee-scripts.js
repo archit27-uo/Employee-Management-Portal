@@ -77,7 +77,7 @@ function fetchEmployeeProfile() {
 
 function editProfile(userId) {
    
-    // Fetch the current profile details
+    
     fetch(`http://localhost:8080/api/employee/info`, {
         method: 'GET',
         headers: headers,
@@ -90,11 +90,8 @@ function editProfile(userId) {
             }
         })
         .then(data => {
-            // Display the modal with pre-filled data for editing
+           
             document.getElementById('editProfileModal').style.display = 'block';
-            // document.getElementById('editUserId').value = data.user.userId;
-            // document.getElementById('editFullName').value = data.fullName;
-            // document.getElementById('editUserEmail').value = data.user.userEmail;
             document.getElementById('editSkills').value = data.skills.join(', ');
         })
         .catch(error => {
@@ -107,15 +104,14 @@ function submitEditProfileForm(event) {
     event.preventDefault();
     const skills = document.getElementById('editSkills').value.split(',').map(skill => skill.trim());
 
-    // const updatedProfile = 
-
+   
     fetch(`http://localhost:8080/api/employee/skills`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(skills)
     }).then(response => {
             if (response.status==200) {
-                console.log('here');
+            
                 showMessage('Profile updated successfully', 'success');
                 document.getElementById('editProfileModal').style.display = 'none';
                 showProfile();
@@ -136,7 +132,7 @@ function fetchAllEmployees() {
         .then(response => response.json())
         .then(data => {
             const employeeList = document.getElementById('employee-list');
-            employeeList.innerHTML = '';  // Clear the list
+            employeeList.innerHTML = ''; 
             data.forEach(employee => {
                 const employeeCard = document.createElement('div');
                 employeeCard.className = 'employee-card';
@@ -160,10 +156,7 @@ function fetchAllEmployees() {
 }
 
 function logout() {
-    // Clear the auth token from local storage
     localStorage.removeItem('authToken');
-
-    // Redirect to the login page
     window.location.href = '../login/login.html';
 }
 

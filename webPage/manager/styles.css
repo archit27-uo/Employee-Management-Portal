@@ -108,17 +108,56 @@ h3 {
 }
 
 /* ----------------Card-Container---------------- */
-
 .card {
-    background-color: #f8f7f7dc;
-    border: none;
-    margin-bottom: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 2rem;
     padding: 20px;
     display: flex;
-    justify-content: space-between;
     flex-direction: column;
-    box-shadow: 0px 1px 2px 0px #d8d8d8;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.card-body {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #555555;
+}
+
+.card-footer {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.card-footer button {
+    background-color: #0175b4;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.card-footer button:hover {
+    background-color: #005a8c;
+}
+
 
 /* -------------filter Search-Bar------------- */
 

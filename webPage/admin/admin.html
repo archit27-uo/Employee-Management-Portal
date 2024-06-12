@@ -34,16 +34,7 @@
 <!-- ------------------------------------------------------------------- -->
 
     <div class="main-content">
-
-        <!-- <div class="search-bar">
-
-            <input class="srch" type="text" placeholder="Search">
-          
-
-        </div> -->
-
-        
-
+     
         <div id="project" class="project" style="display: none;">
             
             <div class="pro"><h3>Project List</h3>
@@ -59,7 +50,7 @@
                 <button class ="add" onclick="openAddUserModal()">Add User</button>
             </div>
             
-            <div class="filter-bar">
+            <div class="filter-bar" id="filter-bar">
                 <button onclick="filterEmployees('all')">ALL</button>
                 <button onclick="filterEmployees('assigned')">ASSIGNED</button>
                 <button onclick="filterEmployees('unassigned')">UNASSIGNED</button>
@@ -75,7 +66,7 @@
         </div>
 
         <div id="request-list" class="request-list">
-            <h3>Request List</h3>
+            
             <div class="pending" id="pending"></div>
             <div class="action-taken" id="action-taken"></div>
             <!-- Request tiles will be appended here -->
@@ -93,7 +84,10 @@
                 <label for="userName">User Name:</label>
                 <input type="text" id="userName" name="userName" required>
                 <label for="userEmail">User Email:</label>
-                <input type="email" id="userEmail" name="userEmail" required>
+                <div class="email-container">
+                    <input type="text" id="userEmail" name="userEmail" required>
+                    <span class="email-suffix">@nucleusteq.com</span>
+                  </div>
                 <label for="userPassword">User Password:</label>
                 <input type="password" id="userPassword" name="userPassword" required>
                 <label for="userRole">User Role:</label>
