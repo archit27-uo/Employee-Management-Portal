@@ -3,7 +3,6 @@ package com.assignment.employeeManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +20,8 @@ public class LoginController {
 	@Autowired
 	private UserLoginService userLoginService;
 	
-	@PostMapping("/login") //@RequestBody EmployeeLoginDTO employeeLoginDTO @PathVariable("employeeEmail") String email, @PathVariable("employeePassword") String password
+	@PostMapping("/login") 
 	public ResponseEntity<LoginResponse> loginEmployee(@RequestBody UserLoginDTO userLoginDTO){
-		//EmployeeLoginDTO employeeLoginDTO = new EmployeeLoginDTO(email,password);
-		System.out.println(userLoginDTO);
 		LoginResponse loginResponse = userLoginService.loginEmployee(userLoginDTO);
 		return ResponseEntity.ok(loginResponse);
 	}

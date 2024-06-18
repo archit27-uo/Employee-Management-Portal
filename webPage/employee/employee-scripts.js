@@ -5,12 +5,40 @@ var token = localStorage.getItem("authToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
-headers.set("ngrok-skip-browser-warning", "69420")
+
+async function fetchData(url, options={}) {
+    try {
+        const response = await fetch(url, { headers, ...options });
+        
+        if (response.status!=200 && response.status!=201){ 
+            const errorData = await response.json();
+            const errorMessage = errorData.message || 'Failed to update employee';
+            throw new Error(errorMessage);
+
+    }       
+    const data = await response.json();
+    return {status : response.status, data };
+        
+    } catch (error) {
+        showMessage(`Failed due to: ${error.message}`, 'error');
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebarLinks = document.querySelectorAll(".sidebar ul li");
+    sidebarLinks.forEach(link => {
+        link.addEventListener("click", function() {
+            sidebarLinks.forEach(link => link.classList.remove("selected"));
+            this.classList.add("selected");
+        });
+    });
+});
 
 function showHomePage() {
     document.getElementById('home-page').style.display = 'block';
     document.getElementById('employee-list').style.display = 'none';
     document.getElementById('profile-page').style.display = 'none';
+    document.getElementById('manager-list').style.display = 'none';
 
     fetchEmployeeInfo();
 }
@@ -19,6 +47,7 @@ function showAllEmployees() {
     document.getElementById('home-page').style.display = 'none';
     document.getElementById('employee-list').style.display = 'flex';
     document.getElementById('profile-page').style.display = 'none';
+    document.getElementById('manager-list').style.display = 'none';
 
     fetchAllEmployees();
 }
@@ -27,6 +56,7 @@ function showProfile() {
     document.getElementById('home-page').style.display = 'none';
     document.getElementById('employee-list').style.display = 'none';
     document.getElementById('profile-page').style.display = 'block';
+    document.getElementById('manager-list').style.display = 'none';
 
     fetchEmployeeProfile();
 }
@@ -40,8 +70,8 @@ function fetchEmployeeInfo() {
             const employeeDetails = `
             <div class="card">
             <h3>Welcome ! ${data.fullName}</h3>
-            <p>Project : ${data.project ? data.project.projectName : 'None'}</p>
-            <p>Manager : ${data.manager ? data.manager.user.userName : 'None'}</p>
+            <p><b>Project: </b> ${data.project ? data.project.projectName : 'None'}</p>
+            <p><b>Manager: </b> ${data.manager ? data.manager.user.userName : 'None'}</p>
             </div>`;
             document.getElementById('employee-details').innerHTML = employeeDetails;
         })
@@ -60,11 +90,14 @@ function fetchEmployeeProfile() {
             const profileDetails = `
             <div class="card">
             <h3>${data.fullName} <i onclick="editProfile(${data.user.userId})" class="fas fa-edit" style="cursor: pointer;"></i></h3>
-            <p>ID : ${data.employeeId} </p>
-            <p>Email : ${data.user.userEmail}</p>
-            <p>Project : ${data.project.projectName}</p>
-            <p>Manager: ${data.manager.user.userName}</p>
-            <p>Skills : ${data.skills.join(', ')}</p>
+            <p><b>ID :</b> ${data.employeeId} </p>
+            <p><b>Email :</b> ${data.user.userEmail}</p>
+            <p><b>Project :</b> ${data.project ? data.project.projectName : 'None'}</p>
+                <p><b>Manager :</b> ${data.manager ? data.manager.user.userName : 'None'}</p>
+            <p><b>Skills :</b> ${data.skills.join(', ')}</p>
+            <div class="card-footer">
+              <button onclick="openModal('${data.user.userEmail}')">Change Password</button>
+              </div>
             </div>`;
             document.getElementById('profile-details').innerHTML = profileDetails;
         })
@@ -140,9 +173,9 @@ function fetchAllEmployees() {
                 const employeeDetails = `
                 <div class="details card">
                 <h3>${employee.fullName}</h3>
-                <p>Project: ${employee.project ? employee.project.projectName : 'None'}</p>
-                <p>Manager: ${employee.manager ? employee.manager.user.userName : 'None'}</p>
-                <p>Skills: ${employee.skills.join(', ')}</p>
+                <p><b>Project:</b> ${employee.project ? employee.project.projectName : 'None'}</p>
+                <p><b>Manager: </b>${employee.manager ? employee.manager.user.userName : 'None'}</p>
+                <p><b>Skills: </b>${employee.skills.join(', ')}</p>
             </div>
                 `;
 
@@ -154,6 +187,96 @@ function fetchAllEmployees() {
             console.error('Error fetching employee list:', error);
         });
 }
+
+
+function showAllManagers() {
+    document.getElementById('home-page').style.display = 'none';
+    document.getElementById('employee-list').style.display = 'none';
+    document.getElementById('profile-page').style.display = 'none';
+    document.getElementById('manager-list').style.display = 'block';
+    fetchAllManagers();
+}
+
+async function fetchAllManagers() {
+
+    const {status, data} = await fetchData('http://localhost:8080/api/employee/manager',{method:'GET'});
+
+        if(status==200){
+            const managerList = document.getElementById('manager-list');
+            managerList.innerHTML = '<div class="gap"><h3>Manager List</h3></div>'; 
+            data.forEach(manager => {
+                const managerCard = document.createElement('div');
+                managerCard.className = 'manager-card';
+
+                const managerDetails = `
+            <div class="card">
+                <div class="details">
+                <h3>${manager.user.userName}</h3>
+                <p><b>Email</b> : ${manager.user.userEmail}</p>
+            </div>
+            </div>
+                `;
+
+                managerCard.innerHTML = managerDetails;
+                managerList.appendChild(managerCard);
+            });
+        }
+}
+
+
+
+function openModal(userEmail) {
+    document.getElementById('changePasswordModal').style.display = 'block';
+    document.getElementById('userEmail').value = userEmail; // Populate with the user's email
+}
+
+function closeModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('userPassword').value = '';
+    document.getElementById('alertMessage').style.display = 'none';
+}
+
+async function changePassword() {
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const change={
+        userName:email,
+        userPassword:password
+    }
+    const response = await fetch('http://localhost:8080/api/employee/changePassword', {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(change)
+    });
+
+    const result = await response.json();
+    const alertMessage = document.getElementById('alertMessage');
+    
+    if (response.ok) {
+        
+        alertMessage.textContent = result.message;
+        alertMessage.className = 'alert success';
+        alertMessage.style.display = 'block';
+        closeModal();
+        logout();
+    } else {
+        alertMessage.textContent = result.message;
+        alertMessage.className = 'alert error';
+    }
+
+   
+}
+
+// Close the modal when the user clicks outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('changePasswordModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+
+
 
 function logout() {
     localStorage.removeItem('authToken');

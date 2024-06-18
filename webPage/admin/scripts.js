@@ -28,6 +28,17 @@ async function fetchData(url, options={}) {
     }
 }
 
+
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebarLinks = document.querySelectorAll(".sidebar ul li");
+    sidebarLinks.forEach(link => {
+        link.addEventListener("click", function() {
+            sidebarLinks.forEach(link => link.classList.remove("selected"));
+            this.classList.add("selected");
+        });
+    });
+});
+
 function openAddUserModal() {
     document.getElementById('addUserModal').style.display = 'block';
 }
@@ -269,11 +280,11 @@ function displayEmployees(projectId, employees) {
     //     container.appendChild(employeeCard);
     // });
     const projectCard = document.querySelector(`[data-panel-id="${projectId}"]`);
-    let employeeList = projectCard.querySelector('.employee-list');
+    let employeeList = projectCard.querySelector('.employee-small-list');
 
     if (!employeeList) {
         employeeList = document.createElement('div');
-        employeeList.classList.add('employee-list');
+        employeeList.classList.add('employee-small-list');
         projectCard.appendChild(employeeList);
     }
 

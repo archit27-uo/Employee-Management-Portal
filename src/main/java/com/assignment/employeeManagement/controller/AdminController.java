@@ -60,36 +60,25 @@ public class AdminController {
 	@GetMapping("/employee")
 	public ResponseEntity<List<Employee>> fetchAllEmployee(){
 		logger.info("API hit: /api/admin/employee");
-//		try {
+
 			List<Employee> employeeList = employeeService.getAllEmployees();
 			return ResponseEntity.status(200).body(employeeList);
-//		}catch(Exception e) {
-//				return ResponseEntity.badRequest().body(null);
-//			}
+
 	}
 	
 	
 	@GetMapping("/employee/{employeeId}")
 	public ResponseEntity<Employee> fetchEmployeeById(@PathVariable Long employeeId) {
 		logger.info("API hit: /api/admin/employee/{employeeId} method:GET");
-//		try {
 			Employee employee = adminService.getEmployeeById(employeeId);
-			return ResponseEntity.status(200).body(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
-		
+			return ResponseEntity.status(200).body(employee);	
 	}
 
 	@DeleteMapping("/employee/{employeeId}")
 	public ResponseEntity<Response> deleteEmployeeById(@PathVariable Long employeeId){
 		logger.info("API hit: /api/admin/employee/{employeeId} method:Delete");
-//		try {
 			adminService.deleteEmployee(employeeId);
 			return ResponseEntity.status(200).body(new Response("Successfully deleted"));
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body("Error : "+e);
-//		}
 	}
 	
 	
@@ -106,25 +95,16 @@ public class AdminController {
     @PostMapping("/project")
     public ResponseEntity<Project> addProject(@RequestBody ProjectDTO projectDTO) {
     	logger.info("API hit: /api/admin/project method:POST");
-//        try {
         	 Project project = adminService.addProject(projectDTO);
     		return ResponseEntity.status(201).body(project);
-//    	}catch(Exception e) {
-//    		return ResponseEntity.badRequest().body(null);
-//    		}
     }
     
     //Fetch all projects
     @GetMapping("/projects")
     public ResponseEntity<List<Project>> getAllProject(){
     	logger.info("API hit: /api/admin/projects method:GET");
-    	
-//    	try {
     		List<Project> projectList =  adminService.getAllProjects();
 			return ResponseEntity.status(200).body(projectList);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
     }
   
     
@@ -132,89 +112,58 @@ public class AdminController {
     @PutMapping("/employee/{employeeId}/assignProject/{projectId}")
     public ResponseEntity<Employee> assignProject(@PathVariable Long employeeId, @PathVariable Long projectId) {
     	logger.info("API hit: /api/admin/employee/{employeeId}/assignProject/{projectId} method:PUT");
-//    	try {
     		Employee employee = adminService.assignProjectToEmployee(employeeId, projectId);
-			return ResponseEntity.status(200).body(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}	
+			return ResponseEntity.status(200).body(employee);	
     }
     
     @PutMapping("/employee/{employeeId}/unassignProject")
     public ResponseEntity<Employee> unassignProject(@PathVariable Long employeeId) {
     	logger.info("API hit: /api/admin/employee/{employeeId}/unassignProject method:PUT");
-//    	try {
     		Employee employee = adminService.unassignProjectFromEmployee(employeeId);
 			return ResponseEntity.status(200).body(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
+
     }
     
     @PutMapping("/request/{requestId}/approve")
     public ResponseEntity<Request> approveProject(@PathVariable Long requestId) {
     	logger.info("API hit: /api/admin/request/{requestId}/approve method:PUT");
-//    	try {
     		Request request= adminService.approveRequest(requestId);
 			return ResponseEntity.status(200).body(request);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//		}
+
     }
     
     @PutMapping("/request/{requestId}/reject")
     public ResponseEntity<Request> rejectRequest(@PathVariable Long requestId) {
     	logger.info("API hit: /api/admin/request/{requestId}/reject method:PUT");
-//    	try {
     		Request request = adminService.rejectRequest(requestId);
 			return ResponseEntity.status(200).body(request);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
     }
     
 
 	@PostMapping("/user")
 	public ResponseEntity<User> saveUser(@RequestBody UserAddDTO userAddDTO) {
 		logger.info("API hit: /api/admin/user method:POST body: "+userAddDTO);
-//		try {
 			User user = userService.addUser(userAddDTO);
-			return ResponseEntity.status(201).body(user);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}	
+			return ResponseEntity.status(201).body(user);	
 	}
     
     @GetMapping("/request")
     public ResponseEntity<List<Request>> getAllRequest(){
     	logger.info("API hit: /api/admin/request method:GET");
-//    	try {
     		List<Request> requestList = adminService.getAllRequest();
 			return ResponseEntity.status(200).body(requestList);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
     }
     
     @GetMapping("/manager")
     public ResponseEntity<List<Manager>> getAllManager(){
-    	logger.info("API hit: /api/admin/manager method:GET");
-//    	try {
     		List<Manager> managerList = adminService.getAllManager();
 			return ResponseEntity.status(200).body(managerList);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
     }
     
     @PostMapping("/manager")
     public ResponseEntity<Manager> addManager(@RequestBody ManagerDTO managerDTO) {
     	logger.info("API hit: /api/admin/manager method:POST");
-//    	try {
     		Manager manager = adminService.addmanager(managerDTO);
 			return ResponseEntity.status(201).body(manager);
-//		}catch(Exception e) {
-//				return ResponseEntity.badRequest().body(null);
-//			}
     }
 }

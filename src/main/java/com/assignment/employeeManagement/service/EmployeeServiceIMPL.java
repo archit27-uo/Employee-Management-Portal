@@ -11,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
@@ -40,6 +42,9 @@ public class EmployeeServiceIMPL implements EmployeeService {
 	
 	@Autowired
 	private ProjectRepository projectRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	/*
 	 * @Override public Employee addEmployee(EmployeeDTO employeeDTO) {
@@ -183,6 +188,36 @@ public Employee getEmployeeInfo(Principal principal) {
         throw new RuntimeException("Internal Server Error");
     }
     
+}
+
+@Override
+public User changePassword(Principal principal, String password) {
+	try {
+	String userEmail = principal.getName();
+	User user = userRepository.findByUserEmail(userEmail);
+	if (user == null) {
+        throw new ResourceNotFoundException("User not found");
+    }
+	user.setUserPassword(this.passwordEncoder.encode(password));
+	User user1 = userRepository.save(user);
+	return user1;
+	}catch(Exception e) {
+		throw new InternalAuthenticationServiceException("Error occured in changing password");
+	}
+}
+	
+	@Override
+	public List<Manager> getAllManagers() {
+	try {
+		List<Manager> managerList = managerRepository.findAll();
+		return managerList;
+	}catch (ResourceNotFoundException ex) {
+        logger.error("ResourceNotFoundException: {}", ex.getMessage());
+        throw ex;
+    } catch (Exception ex) {
+        logger.error("Exception: {}", ex.getMessage());
+        throw new RuntimeException("Internal Server Error");
+    }	
 }
 }
 

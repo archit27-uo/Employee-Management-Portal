@@ -19,7 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
+import com.assignment.employeeManagement.dto.UserLoginDTO;
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
+import com.assignment.employeeManagement.payload.response.LoginResponse;
+import com.assignment.employeeManagement.payload.response.Response;
 import com.assignment.employeeManagement.service.EmployeeService;
 
 @RestController
@@ -35,40 +39,45 @@ public class EmployeeController {
 	@GetMapping("/all")
 	public ResponseEntity<List<Employee>> fetchAllEmployee(){
 		logger.info("API hit: /api/employee/all method:GET");
-//		try {
 			List<Employee> employeeList = employeeService.getAllEmployees();
 			return ResponseEntity.status(200).body(employeeList);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
 	}
 	
 	
 	@PutMapping("/skills")
 	public ResponseEntity<Employee> updateSkills(Principal principal, @RequestBody List<String> skills){
 		logger.info("API hit: /api/employee/skills method:PUT body: "+skills);
-//		try {
 			Employee employee = employeeService.updateSkills(principal, skills);
 			return ResponseEntity.status(200).body(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
+
 	}
 	
 	
 	@GetMapping("/info")
 	public ResponseEntity<Employee> getInfo(Principal principal) {
 		logger.info("API hit: /api/employee/info method:GET Principal: "+principal);
-//		try {
-			System.out.println("inside controller info");
 			Employee employee = employeeService.getEmployeeInfo(principal);
 			return ResponseEntity.status(200).body(employee);
-//		}catch(Exception e) {
-//			return ResponseEntity.badRequest().body(null);
-//			}
+
+	}
+	
+	@PutMapping("/changePassword")
+	public ResponseEntity<Response> changePassword(Principal principal, @RequestBody UserLoginDTO userLoginDTO){
+		logger.info("API hit: /api/employee/changePassword method:PUT Principal: "+principal);
+		String password = userLoginDTO.getUserPassword();
+		employeeService.changePassword(principal, password);
+		Response response = new Response("Changed password successfully");
+		return ResponseEntity.status(200).body(response);
 	}
 	
 	
+	@GetMapping("/manager")
+	public ResponseEntity<List<Manager>> getAllManager(){
+		logger.info("API hit: /api/employee/manager method:GET");
+		List<Manager> managerList = employeeService.getAllManagers();
+		return ResponseEntity.status(200).body(managerList);
+		
+	}
 //	@PutMapping("/employee/{employeeId}")
 //	public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId,@RequestBody EmployeeDTO employeeDTO){
 //		logger.info("API hit: /api/employee/employee/{employeeID} method:PUT body: "+employeeDTO);

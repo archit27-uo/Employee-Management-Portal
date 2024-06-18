@@ -63,8 +63,7 @@ public class ManagerServiceIMPL implements ManagerService {
 	@Override
 	public List<Manager> getAllManagers() {
 		try {
-			List<Manager> managerList = managerRepository.findAll();
-			return managerList;
+			return employeeService.getAllManagers();
 		}catch (ResourceNotFoundException ex) {
             logger.error("ResourceNotFoundException: {}", ex.getMessage());
             throw ex;
@@ -233,6 +232,11 @@ public class ManagerServiceIMPL implements ManagerService {
             logger.error("Exception: {}", ex.getMessage());
             throw new RuntimeException("Internal Server Error");
         }
+	}
+
+	@Override
+	public User changePassword(Principal principal, String password) {
+		return employeeService.changePassword(principal, password);
 	}
 
 

@@ -26,6 +26,15 @@ async function fetchData(url, options={}) {
     }
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebarLinks = document.querySelectorAll(".sidebar ul li");
+    sidebarLinks.forEach(link => {
+        link.addEventListener("click", function() {
+            sidebarLinks.forEach(link => link.classList.remove("selected"));
+            this.classList.add("selected");
+        });
+    });
+});
 
 function getManagerId() {
     return this.managerId;
@@ -41,14 +50,14 @@ function showHomePage() {
     fetchManagerInfo();
 }
 
-function showAllEmployees() {
+function showAllEmployees(event) {
     document.getElementById('home-page').style.display = 'none';
     document.getElementById('employee').style.display = 'flex';
     document.getElementById('manager-list').style.display = 'none';
     document.getElementById('project-list').style.display = 'none';
     document.getElementById('profile-page').style.display = 'none';
     document.getElementById('request').style.display = 'none';
-    fetchEmployees('all');
+    fetchEmployees(event, 'all');
 }
 
 function showAllManagers() {
@@ -151,9 +160,9 @@ function filterEmployees(filter) {
 }
 
 
-function fetchMyEmployees() {
+function fetchMyEmployees(event) {
 
-
+    setSelectedButton(event.target);
 
     fetch('http://localhost:8080/api/manager/employee/team', { headers: headers })
         .then(response => response.json())
@@ -186,6 +195,7 @@ function fetchMyEmployees() {
         .catch(error => {
             console.error('Error fetching employee data:', error);
         });
+
 }
 
 function requestForUnassign(employeeId, projectId){
@@ -197,10 +207,18 @@ function requestForUnassign(employeeId, projectId){
     requestAdmin(employee, "UNASSIGN_EMPLOYEE")
 }
 
+function setSelectedButton(button) {
+    // Remove 'selected' class from all buttons
+    const buttons = document.querySelectorAll('.filter-bar button');
+    buttons.forEach(btn => btn.classList.remove('selected'));
 
-function fetchEmployees(filter) {
+    // Add 'selected' class to the clicked button
+    button.classList.add('selected');
+}
 
+function fetchEmployees(event, filter) {
 
+    setSelectedButton(event.target);
     fetch('http://localhost:8080/api/manager/employee', { headers: headers })
         .then(response => response.json())
         .then(data => {

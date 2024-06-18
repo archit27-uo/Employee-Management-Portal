@@ -19,9 +19,11 @@
         <ul class="list">
             <li><a href="#" onclick="showHomePage()">Home</a></li>
             <li><a href="#" onclick="showAllEmployees()">Employees</a></li>
+            <li><a href="#" onclick="showAllManagers()">Manager</a> </li>
+            <li>  <a href="#" class="profile" onclick="showProfile()">Profile</a></li>
         </ul>
 
-        <a href="#" class="profile" onclick="showProfile()">Profile</a>
+      
 
         <div class="line"></div>
 
@@ -39,13 +41,16 @@
             <!-- Employee cards will be appended here -->
         </div>
 
+        <div id="manager-list" class="manager-list">
+
+        </div>
+        
         <div id="profile-page">
             <div id="profile-details"></div>
         </div>
         <div id="editProfileModal" class="modal">
             <div class="modal-content">
-                <span class="close"
-                    onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
+                <span class="close" onclick="document.getElementById('editProfileModal').style.display='none'">&times;</span>
                 <h3>Edit Profile</h3>
                 <form id="editProfileForm" onsubmit="submitEditProfileForm(event)">
                     <input type="hidden" id="editUserId">
@@ -55,11 +60,30 @@
                     <input type="email" id="editUserEmail" name="userEmail" required> -->
                     <label for="editSkills">Skills (comma separated):</label>
                     <input type="text" id="editSkills" name="skills" required>
-                    <button type="submit">Update Skills</button>
+                    <div class="modal-footer">
+                        <button type="submit">Update Skills</button>
+                    </div>
+                    
                 </form>
             </div>
         </div>
         <div id="message" class="message"></div>
+    </div>
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-header">Change Password</div>
+            <div class="modal-body">
+                <label for="userEmail">Email</label>
+                <input type="email" id="userEmail" readonly>
+                <label for="userPassword">New Password</label>
+                <input type="password" id="userPassword" required>
+                <div id="alertMessage" class="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="changePassword()">Submit</button>
+            </div>
+        </div>
     </div>
 
     <script src="employee-scripts.js" defer></script>

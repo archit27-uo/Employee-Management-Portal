@@ -9,6 +9,7 @@ import com.assignment.employeeManagement.entity.Employee;
 import com.assignment.employeeManagement.entity.Manager;
 import com.assignment.employeeManagement.entity.Project;
 import com.assignment.employeeManagement.entity.Request;
+import com.assignment.employeeManagement.entity.User;
 
 public interface ManagerService {
 	List<Employee> getAllEmployees();
@@ -19,6 +20,7 @@ public interface ManagerService {
     List<Employee> filterEmployeesBySkills(List<String> skills);
     List<Employee> getUnassignedEmployees();
     List<Employee> getAllEmployeeByManager(Principal principal);
+    User changePassword(Principal principal, String password);
     Request requestEmployeesForProject(RequestDTO requestDTO);
 	ManagerInfoDTO getManagerInfo(Principal principal);
 }

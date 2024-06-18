@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import com.assignment.employeeManagement.dto.EmployeeDTO;
 import com.assignment.employeeManagement.entity.Employee;
+import com.assignment.employeeManagement.entity.Manager;
+import com.assignment.employeeManagement.entity.User;
 
 
 public interface EmployeeService {
@@ -17,5 +19,6 @@ public interface EmployeeService {
     List<Employee> getAllEmployees();
     Employee updateSkills(Principal principal, List<String> skills);
     Employee getEmployeeInfo(Principal pincipal);
-    
+    User changePassword(Principal principal, String password);
+    List<Manager> getAllManagers();
 }

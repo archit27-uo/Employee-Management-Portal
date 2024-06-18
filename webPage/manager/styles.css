@@ -8,6 +8,8 @@
 
 body {
     font-family: 'Franklin Gothic Normal', 'Arial Narrow', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
 }
 
 html {
@@ -17,15 +19,20 @@ html {
 a {
     text-decoration: none;
     color: inherit;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #005a8c;
 }
 
 h3 {
-    font-size: 1.3rem;
-    margin-bottom: 1.3%;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
     font-weight: 700;
 }
 
-/* ---------------filter-bar------------- */
+/* ---------------Filter Bar------------- */
 
 .filter-bar {
     display: flex;
@@ -40,6 +47,7 @@ h3 {
     border: none;
     background-color: transparent;
     font-weight: 540;
+    transition: transform 0.3s, color 0.3s;
 }
 
 .filter-bar button:hover {
@@ -47,10 +55,15 @@ h3 {
     color: #003566;
 }
 
-/* --------------------Side-Bar---------------- */
+.filter-bar .selected {
+    background-color: #005a8c;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+/* --------------------Sidebar---------------- */
 
 .sidebar {
-    margin-left: 2px;
     background-color: #003049;
     color: white;
     height: 100vh;
@@ -59,17 +72,17 @@ h3 {
     box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
     position: fixed;
     display: flex;
-    justify-content: flex-start;
     flex-direction: column;
-    flex-wrap: nowrap;
-    box-shadow: 0px 0px 6px 0px #1b1a1a;
+    justify-content: space-between;
 }
 
 .sidebar h2 {
-    margin: 1rem 0px 1rem 0px;
+    margin: 1rem 0;
+    font-size: 1.8rem;
+    text-align: center;
 }
 
-.list {
+.sidebar .list {
     font-weight: 400;
 }
 
@@ -79,6 +92,15 @@ h3 {
 
 .sidebar ul li {
     margin: 20px 0;
+    padding: 10px 0;
+    transition: background-color 0.3s;
+}
+
+.sidebar ul li:hover,
+.sidebar ul li.selected {
+    background-color: #005a8c;
+    border-radius: 5px;
+    padding-left: 10px;
 }
 
 .line {
@@ -92,10 +114,17 @@ h3 {
     text-align: center;
     text-decoration: none;
     font-weight: bold;
+    background-color: #f44336;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.sidebar .logout:hover {
+    background-color: #d32f2f;
 }
 
 /* ---------------Content Container------------- */
-
 
 .main-content {
     display: flex;
@@ -105,6 +134,10 @@ h3 {
     align-content: space-between;
     margin-left: 20%;
     padding: 40px;
+    background-color: #fff;
+    min-height: 100vh;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
 /* ----------------Card-Container---------------- */
@@ -158,8 +191,7 @@ h3 {
     background-color: #005a8c;
 }
 
-
-/* -------------filter Search-Bar------------- */
+/* -------------Filter Search Bar------------- */
 
 .search {
     display: flex;
@@ -171,11 +203,8 @@ h3 {
     flex-grow: 1;
     padding: 7px;
     margin-right: 10px;
-}
-
-.srch {
-    width: 36rem;
-    border: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     box-shadow: 0px 0px 2px .1px #000000;
 }
 
@@ -184,8 +213,10 @@ h3 {
     font-size: 0.8rem;
     color: #fcfcfcf8;
     background-color: #003049;
-    border: 2rem;
+    border: none;
+    border-radius: 5px;
     box-shadow: 0px 0px 1px 0px #000000;
+    transition: background-color 0.3s;
 }
 
 .search button:hover {
@@ -228,6 +259,9 @@ h3 {
     background-color: #002f49e2;
     color: #ffffff;
     border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
 .employee .details button:hover {
@@ -275,7 +309,6 @@ h3 {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-
 .modal-content {
     background-color: #fefefe;
     margin: 8% auto;
@@ -284,6 +317,8 @@ h3 {
     width: 50%;
     box-sizing: border-box;
     box-shadow: 5px 5px 5px 0px #757575;
+    border-radius: 10px;
+    animation: slide-down 0.4s ease-out;
 }
 
 .modal-content .close {
@@ -308,6 +343,7 @@ h3 {
     margin-top: 5px;
     border: 1px solid #888;
     padding: 10px;
+    border-radius: 5px;
 }
 
 .modal-content form input {
@@ -315,14 +351,19 @@ h3 {
     padding: 8px;
     margin-top: 5px;
     box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .modal-content form button {
     background-color: #003049;
     border: none;
     color: white;
-    padding: 8px 8px;
+    padding: 10px 20px;
+    margin-top: 20px;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
 .modal-content form button:hover {
@@ -330,39 +371,7 @@ h3 {
     color: #fffffff3;
 }
 
-.modal-content .submit_btn {
-    display: flex;
-    justify-content: space-between;
-}
-
-.modal-content .rqst {
-    margin-bottom: 4.5px;
-}
-
-/* ---------------------request-section--------------- */
-
-
-.title_btn{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 1rem;
-}
-
-.title_btn button{
-    padding: .4rem;
-    font-size: 0.8rem;
-    color: #fcfcfcf8;
-    background-color: #002f49e4;
-    border: none;
-}
-
-.title_btn button:hover {
-    background-color: #003049;
-    color: #ffffff;
-}
-
+/* Accordion Styles */
 .accordion {
     background-color: #002f49f3;
     color: #ffffff;
@@ -374,33 +383,72 @@ h3 {
     outline: none;
     font-size: 15px;
     transition: 0.4s;
-  }
-  
-  .active, .accordion:hover {
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.accordion:hover {
     background-color: #002f49dc;
-  }
-  
-  .accordion:after {
+}
+
+.accordion:after {
     content: '\002B';
     color: #fbfbfb;
     font-weight: bold;
     float: right;
     margin-left: 5px;
-  }
-  
-  .active:after {
+}
+
+.accordion.active:after {
     content: "\2212";
-  }
-  
-  .panel {
-    margin-top: 10px ;
+}
+
+.panel {
+    margin-top: 10px;
     padding: 0px 18px;
     background-color: white;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.2s ease-out;
-  }
+    border-radius: 5px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
 
-  .sts{
+/* Status */
+.sts {
     margin-bottom: 10px;
-  }
+}
+
+.sidebar ul li.selected {
+    background-color: #005a8c;
+    border-radius: 5px;
+    padding-left: 10px;
+}
+
+
+
+.title_btn{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+    }
+    
+    .title_btn button{
+        height: 6vmin;
+        width: 14vmin;
+        font-size: 2vmin;
+        background-color: #002f49e2;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+    
+    .title_btn button
+    {
+    background-color: #003049;
+    color: #ffffff;
+    }

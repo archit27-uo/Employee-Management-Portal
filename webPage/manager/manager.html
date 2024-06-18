@@ -28,7 +28,7 @@
 
         <ul>
             <li><a href="#" onclick="showHomePage()">Home</a></li>
-            <li><a href="#" onclick="showAllEmployees()">Employees</a></li>
+            <li><a href="#" onclick="showAllEmployees(event)">Employees</a></li>
             <li><a href="#" onclick="showAllManagers()">Managers</a></li>
             <li><a href="#" onclick="showAllProjects()">Projects</a></li>
             <li><a href="#" onclick="showRequests()">Request</a></li>
@@ -62,9 +62,9 @@
             </div>
 
               <div class="filter-bar">
-                <button onclick="fetchEmployees('all')">ALL</button>
-                <button onclick="fetchEmployees('unassigned')">UNASSIGNED</button>
-                <button onclick="fetchMyEmployees()">My Team</button>
+                <button onclick="fetchEmployees(event, 'all')">ALL</button>
+                <button onclick="fetchEmployees(event, 'unassigned')">UNASSIGNED</button>
+                <button onclick="fetchMyEmployees(event)">My Team</button>
               </div>
             
 
