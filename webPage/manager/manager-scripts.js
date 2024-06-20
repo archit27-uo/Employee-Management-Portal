@@ -3,33 +3,33 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 var managerId;
-var token = localStorage.getItem("authToken");
+var token = localStorage.getItem("managerAuthToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
 
-async function fetchData(url, options={}) {
+async function fetchData(url, options = {}) {
     try {
         const response = await fetch(url, { headers, ...options });
-        
-        if (response.status!=200 && response.status!=201){ 
+
+        if (response.status != 200 && response.status != 201) {
             const errorData = await response.json();
             const errorMessage = errorData.message || 'Failed to update employee';
             throw new Error(errorMessage);
 
-    }       
-    const data = await response.json();
-    return {status : response.status, data };
-        
+        }
+        const data = await response.json();
+        return { status: response.status, data };
+
     } catch (error) {
         showMessage(`Failed due to: ${error.message}`, 'error');
     }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const sidebarLinks = document.querySelectorAll(".sidebar ul li");
     sidebarLinks.forEach(link => {
-        link.addEventListener("click", function() {
+        link.addEventListener("click", function () {
             sidebarLinks.forEach(link => link.classList.remove("selected"));
             this.classList.add("selected");
         });
@@ -147,6 +147,9 @@ function fetchManagerProfile() {
             <ul>
                 ${data.employeeList.map(employee => `<li><b>Employee ID:</b> ${employee.employeeId}, <b>Name:</b> ${employee.fullName}</li>`).join('')}
             </ul>
+            <div class="card-footer">
+              <button onclick="openModal('${data.projectList[0].manager.user.userEmail}')">Change Password</button>
+              </div>
              </div>`;
             document.getElementById('profile-details').innerHTML = profileDetails;
         })
@@ -154,6 +157,57 @@ function fetchManagerProfile() {
             console.error('Error fetching profile info:', error);
         });
 }
+
+function openModal(userEmail) {
+    document.getElementById('changePasswordModal').style.display = 'block';
+    document.getElementById('userEmail').value = userEmail; // Populate with the user's email
+}
+
+function closeModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('userPassword').value = '';
+    document.getElementById('alertMessage').style.display = 'none';
+}
+
+async function changePassword() {
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const change = {
+        userName: email,
+        userPassword: password
+    }
+    const response = await fetch('http://localhost:8080/api/manager/changePassword', {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(change)
+    });
+
+    const result = await response.json();
+    const alertMessage = document.getElementById('alertMessage');
+
+    if (response.ok) {
+
+        alertMessage.textContent = result.message;
+        alertMessage.className = 'alert success';
+        alertMessage.style.display = 'block';
+        closeModal();
+        logout();
+    } else {
+        alertMessage.textContent = result.message;
+        alertMessage.className = 'alert error';
+    }
+
+
+}
+
+// Close the modal when the user clicks outside of it
+window.onclick = function (event) {
+    const modal = document.getElementById('changePasswordModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
 
 function filterEmployees(filter) {
     fetchEmployees(filter);
@@ -198,10 +252,10 @@ function fetchMyEmployees(event) {
 
 }
 
-function requestForUnassign(employeeId, projectId){
+function requestForUnassign(employeeId, projectId) {
     let arr = [employeeId];
     const employee = {
-        employeeId : arr,
+        employeeId: arr,
         projectId: projectId
     }
     requestAdmin(employee, "UNASSIGN_EMPLOYEE")
@@ -223,7 +277,7 @@ function fetchEmployees(event, filter) {
         .then(response => response.json())
         .then(data => {
             const employeeList = document.getElementById('employee-list');
-            employeeList.innerHTML = ''; 
+            employeeList.innerHTML = '';
 
             data.forEach(employee => {
                 if (filter === 'all' || (filter === 'assigned' && employee.project) || (filter === 'unassigned' && !employee.project)) {
@@ -252,7 +306,7 @@ function fetchEmployees(event, filter) {
                     <p><b>Manager:</b> ${employee.manager ? employee.manager.user.userName : 'None'}</p>
                     <p><b>Skills:</b> ${employee.skills.join(', ')}</p>     
                 </div>`;
-                    
+
                     employeeCard.innerHTML = employeeDetails;
                     employeeList.appendChild(employeeCard);
                 }
@@ -270,7 +324,7 @@ function fetchAllManagers() {
         .then(response => response.json())
         .then(data => {
             const managerList = document.getElementById('manager-list');
-            managerList.innerHTML = '<h3>Manager List</h3>'; 
+            managerList.innerHTML = '<h3>Manager List</h3>';
             data.forEach(manager => {
                 const managerCard = document.createElement('div');
                 managerCard.className = 'manager-card';
@@ -298,7 +352,7 @@ function fetchAllProjects() {
         .then(response => response.json())
         .then(data => {
             const projectList = document.getElementById('project-list');
-            projectList.innerHTML = '<h3>Project List</h3>';  
+            projectList.innerHTML = '<h3>Project List</h3>';
             data.forEach(project => {
                 const projectCard = document.createElement('div');
                 projectCard.className = 'project-card';
@@ -330,23 +384,23 @@ function openAssignProjectModal(employeeId) {
 function closeAssignProjectModal() {
     document.getElementById('assignProjectModal').style.display = 'none';
 }
-function requestEmployee(event){
+function requestEmployee(event) {
     event.preventDefault();
     const employeeId = document.getElementById('assignEmployeeId').value;
     const projectId = document.getElementById('assignProjectId').value;
     let arr = [employeeId];
 
-    const employee ={
-        employeeId:arr,
-        projectId:parseInt(projectId)
+    const employee = {
+        employeeId: arr,
+        projectId: parseInt(projectId)
     }
     requestAdmin(employee, "ASSIGN_EMPLOYEE");
 }
 
 
 async function requestAdmin(employee, requestTypeName) {
-    
-  
+
+
     const requestData = {
         requesterId: parseInt(this.managerId),
         requestType: requestTypeName,
@@ -355,18 +409,18 @@ async function requestAdmin(employee, requestTypeName) {
         requestDetails: null
     };
     let apiUrl = 'http://localhost:8080/api/manager/request/employees';
-    const {status, data} = await fetchData(apiUrl, {
+    const { status, data } = await fetchData(apiUrl, {
         method: 'POST',
         body: JSON.stringify(requestData)
     })
-    
 
-   
-            if (status==200 || status==201) {
-                showMessage('Request submitted successfully!', 'success');
-                closeAssignProjectModal();
-               
-            }
+
+
+    if (status == 200 || status == 201) {
+        showMessage('Request submitted successfully!', 'success');
+        closeAssignProjectModal();
+
+    }
 
 }
 
@@ -383,7 +437,7 @@ function closeRequestModal() {
 // Function to submit the request form
 async function submitRequestForm(event) {
     event.preventDefault();
-    
+
     const requesterId = this.managerId;
     const requestType = document.getElementById('requestType').value;
     const projectId = document.getElementById('projectId').value;
@@ -405,20 +459,25 @@ async function submitRequestForm(event) {
     } else if (requestType === 'PROJECT_RESOURCE') {
         apiUrl = 'http://localhost:8080/api/manager/request/projectResource';
     }
-    const {status, response} = await fetchData(apiUrl, {
+    const { status, response } = await fetchData(apiUrl, {
         method: 'POST',
         body: JSON.stringify(requestData)
     })
-    
-            if (status==200) {
-                showMessage('Request submitted successfully!', 'success');
-                closeRequestModal();
-                showRequests();
-                return response.json();
-            } else {
-                throw new Error('Request failed');
-            }
-      
+
+    if (status == 200) {
+        showMessage('Request submitted successfully!', 'success');
+        document.getElementById('requestType').value='';
+        document.getElementById('projectId').value='';
+        document.getElementById('employeeIds').value='';
+        document.getElementById('requestDetails').value='';
+
+        closeRequestModal();
+        showRequests();
+        
+    } else {
+        throw new Error('Request failed');
+    }
+
 }
 
 
@@ -457,11 +516,11 @@ function displayFilteredEmployees(employees) {
         employeeList.innerHTML = '<p>No employees found with the specified skills.</p>';
         return;
     }
-    
+
     employees.forEach(employee => {
         const employeeCard = document.createElement('div');
         employeeCard.className = 'employee-card';
-      
+
         const employeeDetails = employee.project == null ? `<div class="details">
                     <div class="details card">
                     <div class="btn">
@@ -507,95 +566,93 @@ function fetchAllRequest(managerId) {
             actionTakenCounter = 0;
             const requestList = document.getElementById('request-list');
             const actionTaken = document.getElementById('action-taken');
-            actionTaken.innerHTML='';
+            actionTaken.innerHTML = '';
             const pending = document.getElementById('pending');
-            pending.innerHTML='';
-            
-          
+            pending.innerHTML = '';
+
+
             data.forEach(request => {
                 const requestAccordion = document.createElement('div');
                 requestAccordion.className = 'accordion-item';
-                
-                if(request.status=='PENDING'){
-                   
-                    if(pendingCounter==0){
+
+                if (request.status == 'PENDING') {
+
+                    if (pendingCounter == 0) {
                         const requestStatus = document.createElement('div');
-                       
+
                         const title = '<h4>Pending Request</h4>';
-                        requestStatus.innerHTML=title;
+                        requestStatus.innerHTML = title;
 
                         pending.appendChild(requestStatus);
                         pendingCounter++;
                     }
-                    
+
                     const requestDetails = `
                <button class="accordion"> Request Id : ${request.requestId} </button>
                <div class="panel card">
                         <p><b>Request Type:</b> ${request.requestType}</p>
                         <p><b>Project ID:</b> ${request.projectId}</p>
-                      <p><b>Employee IDs:</b> ${
-    Array.isArray(request.employeeIds) 
-    ? (request.employeeIds.length > 0 
-        ? request.employeeIds.join(', ') 
-        : 'No Employee IDs') 
-    : (request.employeeIds || 'No Employee IDs')
-}</p>
+                      <p><b>Employee IDs:</b> ${Array.isArray(request.employeeIds)
+                            ? (request.employeeIds.length > 0
+                                ? request.employeeIds.join(', ')
+                                : 'No Employee IDs')
+                            : (request.employeeIds || 'No Employee IDs')
+                        }</p>
                         <p><b>Request Details:</b> ${request.requestDetails}</p>
                         <p class="sts"><b>Status:</b> ${request.status}</p>
                 </div>`;
-                requestAccordion.innerHTML = requestDetails;
-                pending.appendChild(requestAccordion);
-           
-                }else{
-                    
-                    if(actionTakenCounter==0){
+                    requestAccordion.innerHTML = requestDetails;
+                    pending.appendChild(requestAccordion);
+
+                } else {
+
+                    if (actionTakenCounter == 0) {
                         const requestStatus = document.createElement('div');
-                        
-                        const title =`<h4>Action Taken Request</h4>`;
-                        requestStatus.innerHTML=title;
+
+                        const title = `<h4>Action Taken Request</h4>`;
+                        requestStatus.innerHTML = title;
                         actionTaken.appendChild(requestStatus);
                         actionTakenCounter++;
                     }
-                    
+
                     const requestDetails = `
                <button class="accordion"> <b>Request Id:</b> ${request.requestId} </button>
                <div class="panel card">
                         <p><b>Request Type:</b> ${request.requestType}</p>
                         <p><b>Project ID:</b> ${request.projectId}</p>
-                      <p><b>Employee IDs:</b> ${
-    Array.isArray(request.employeeIds) 
-    ? (request.employeeIds.length > 0 
-        ? request.employeeIds.join(', ') 
-        : 'No Employee IDs') 
-    : (request.employeeIds || 'No Employee IDs')
-}</p>
+                      <p><b>Employee IDs:</b> ${Array.isArray(request.employeeIds)
+                            ? (request.employeeIds.length > 0
+                                ? request.employeeIds.join(', ')
+                                : 'No Employee IDs')
+                            : (request.employeeIds || 'No Employee IDs')
+                        }</p>
                         <p><b>Request Details:</b> ${request.requestDetails}</p>
                         <p class="sts"><b>Status:</b> ${request.status}</p>
                 </div>`;
-                requestAccordion.innerHTML = requestDetails;
-                actionTaken.appendChild(requestAccordion);
-             
-                }
-                
+                    requestAccordion.innerHTML = requestDetails;
+                    actionTaken.appendChild(requestAccordion);
 
-                
-                
+                }
+
+
+
+
             });
 
             //  Accordion Panel for Request 
             var acc = document.getElementsByClassName("accordion");
             var i;
-            
+
             for (i = 0; i < acc.length; i++) {
-              acc[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                var panel = this.nextElementSibling;
-                if (panel.style.maxHeight) {
-                  panel.style.maxHeight = null;
-                } else {
-                  panel.style.maxHeight = panel.scrollHeight + "px";
-                } 
-              });
+                acc[i].addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    var panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                });
             }
             // ---------------End!-----------------
 
@@ -606,9 +663,9 @@ function fetchAllRequest(managerId) {
 }
 
 function logout() {
-   
-    localStorage.removeItem('authToken');
-    window.location.href = '../login/login.html'; 
+
+    localStorage.removeItem('managerAuthToken');
+    window.location.href = '../login/login.html';
 }
 
 
@@ -617,8 +674,8 @@ function showMessage(message, type) {
     const messageElement = document.createElement('div');
     messageElement.textContent = message;
     messageElement.className = type === 'success' ? 'success-message' : 'error-message';
-    
-    
+
+
     if (type === 'success') {
         messageElement.style.backgroundColor = 'green';
         messageElement.style.color = 'white';
@@ -626,7 +683,7 @@ function showMessage(message, type) {
         messageElement.style.backgroundColor = 'red';
         messageElement.style.color = 'white';
     }
-    
+
 
     messageElement.style.position = 'fixed';
     messageElement.style.top = '20px';

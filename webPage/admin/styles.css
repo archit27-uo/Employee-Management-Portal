@@ -434,19 +434,19 @@ td {
 
 /* Icons styling */
 .edit-icon {
-    color: #0095ff; /* Blue color for edit icon */
+    color: #0095ff; 
     cursor: pointer;
     margin-right: 10px;
 }
 
 .delete-icon {
-    color: #FF0000; /* Red color for delete icon */
+    color: #FF0000; 
     cursor: pointer;
 }
 
 .edit-icon:hover,
 .delete-icon:hover {
-    opacity: 0.7; /* Slight transparency on hover */
+    opacity: 0.7;
 }
 
 /*-----------------------------------------------------------------------------------------*/
@@ -455,18 +455,18 @@ td {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    margin-top: 16px; /* To create space between project card and employee list */
+    margin-top: 16px; 
 }
 
 .employee-small-card {
-    width: 200px; /* Fixed width */
-    height: 200px; /* Fixed height */
+    width: 200px;
+    height: 200px; 
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Center content vertically */
+    justify-content: center; 
     padding: 16px;
     background-color: #fff;
     transition: transform 0.3s;

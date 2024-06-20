@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4; /* Light grey background for a clean look */
+  background-color: #f4f4f4; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,20 +14,20 @@ body {
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #ffffff; /* White background for the form */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  background-color: #ffffff; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
   transition: box-shadow 0.3s, transform 0.3s;
 }
 
 .container:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
-  transform: translateY(-3px); /* Slight lift on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
 }
 
 input[type="text"], input[type="password"] {
   width: 100%;
-  padding: 12px; /* Increased padding for better touch target */
-  margin: 10px 0; /* Increased margin for better spacing */
+  padding: 12px;
+  margin: 10px 0; 
   display: inline-block;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -36,16 +36,16 @@ input[type="text"], input[type="password"] {
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
-  border-color: #0175b4; /* Consistent focus color */
-  outline: none; /* Remove default outline */
-  box-shadow: 0 0 5px rgba(1, 117, 180, 0.3); /* Light blue shadow */
+  border-color: #0175b4; 
+  outline: none; 
+  box-shadow: 0 0 5px rgba(1, 117, 180, 0.3); 
 }
 
 input[type="submit"] {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
-  background-color: #0175b4; /* Consistent button color */
+  background-color: #0175b4; 
   color: white;
   border: none;
   border-radius: 4px;
@@ -54,17 +54,17 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-  background-color: #005a8c; /* Darker shade on hover */
+  background-color: #005a8c; 
 }
 
 #message {
   color: black;
-  margin-top: 10px; /* Added margin for spacing */
-  text-align: center; /* Centered message */
-  font-weight: bold; /* Bold message text */
+  margin-top: 10px;
+  text-align: center; 
+  font-weight: bold; 
 }
 
-/* Additional styling for header and overall page */
+
 h2 {
   text-align: center;
   color: #333333;

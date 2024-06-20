@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetchEmployees('all');
 });
 
-var token = localStorage.getItem("authToken");
+var token = localStorage.getItem("adminAuthToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
@@ -48,7 +48,7 @@ function closeAddUserModal() {
 }
 
 function logout() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('adminAuthToken');
     window.location.href = '../login/login.html';
 }
 
@@ -344,6 +344,7 @@ async function fetchAllManagers() {
             <div class="card">
                 <div class="details">
                 <h3>${manager.user.userName}</h3>
+                <p><b>ManagerId</b> : ${manager.managerId} </p>
                 <p><b>Email</b> : ${manager.user.userEmail}</p>
             </div>
             </div>
@@ -531,6 +532,11 @@ async function submitEditEmployeeForm(event) {
         body: JSON.stringify(employeeData)
     });
             if (status==200) {
+                document.getElementById('editEmployeeId').value='';
+                document.getElementById('editFullName').value='';
+                document.getElementById('editProjectId').value='';
+                document.getElementById('editManagerId').value='';
+                document.getElementById('editSkills').value='';
                 closeEditEmployeeModal();
                 fetchEmployees('all');
                 return data.text();
@@ -602,6 +608,10 @@ function submitUserForm(event) {
             
             if (user.userRole === 'EMPLOYEE') {
                 document.getElementById('employeeUserId').value = data.userId;
+                document.getElementById('userName').value='';
+                document.getElementById('userEmail').value='';
+                document.getElementById('userPassword').value='';
+                document.getElementById('userRole').value='';
                 closeAddUserModal();
                 openAddEmployeeModal();
             } else {
@@ -616,12 +626,16 @@ function submitUserForm(event) {
                     .then(response => response.json())
                     .then(data => {
                         showMessage('Manager added successfully','Success');
+
                     })
                     .catch(error => {
                         console.error('Error adding manager:', error);
                         showMessage('Failed to add manager: ' + error.message, 'error');
                     });
-
+                    document.getElementById('userName').value='';
+                    document.getElementById('userEmail').value='';
+                    document.getElementById('userPassword').value='';
+                    document.getElementById('userRole').value='';
                 closeAddUserModal();
             }
         })
@@ -650,6 +664,11 @@ async function submitEmployeeForm(event) {
             if(status==201){
             fetchEmployees('all');
             showMessage('Employee added successfully', 'success');
+            document.getElementById('employeeUserId').value='';
+            document.getElementById('fullName').value='';
+            document.getElementById('projectId').value='';
+            document.getElementById('managerId').value='';
+            document.getElementById('skills').value='';
             closeAddEmployeeModal();
             }
             
@@ -672,7 +691,7 @@ async function handleRequest(chooseAction, requestId) {
         });
        
     }
-    fetchRequests();
+    await fetchRequests();
     
 }
 
@@ -704,6 +723,8 @@ async function submitAddProjectForm(event) {
  
             if (status==201) {
                 showMessage('Project added successfully', 'success');
+                document.getElementById('projectName').value='';
+                document.getElementById('projectManagerId').value='';
                 closeAddProjectModal();
                 fetchProjects();
             } else {

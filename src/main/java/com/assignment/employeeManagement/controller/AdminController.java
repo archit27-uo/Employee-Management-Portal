@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 public class AdminController {
 
 	private static final Logger logger = LogManager.getLogger(AdminController.class);
+	
 	@Autowired
 	private EmployeeService employeeService;
 	

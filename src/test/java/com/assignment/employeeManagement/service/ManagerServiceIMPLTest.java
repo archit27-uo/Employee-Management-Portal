@@ -23,6 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -55,32 +57,58 @@ public class ManagerServiceIMPLTest {
 
     @Mock
     private RequestRepository requestRepository;
+    
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private ManagerServiceIMPL managerService;
 
     @Test
     void getAllManagers_Success() {
+        // Arrange
         Manager manager1 = new Manager();
         Manager manager2 = new Manager();
-        List<Manager> managers = Arrays.asList(manager1, manager2);
+        List<Manager> mockManagers = Arrays.asList(manager1, manager2);
 
-        when(managerRepository.findAll()).thenReturn(managers);
+        when(employeeService.getAllManagers()).thenReturn(mockManagers);
 
+        // Act
         List<Manager> result = managerService.getAllManagers();
 
+        // Assert
         assertEquals(2, result.size());
-        verify(managerRepository, times(1)).findAll();
+        verify(employeeService).getAllManagers();
     }
 
     @Test
-    void getAllManagers_Exception() {
-        when(managerRepository.findAll()).thenThrow(new RuntimeException("Internal Server Error"));
+    void getAllManagers_ResourceNotFoundException() {
+        // Arrange
+        when(employeeService.getAllManagers()).thenThrow(new ResourceNotFoundException("No managers found"));
 
-        Exception exception = assertThrows(RuntimeException.class, () -> managerService.getAllManagers());
+        // Act & Assert
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            managerService.getAllManagers();
+        });
 
-        assertEquals("Internal Server Error", exception.getMessage());
-        verify(managerRepository, times(1)).findAll();
+        assertEquals("No managers found", thrown.getMessage());
+        verify(employeeService).getAllManagers();
+        
+    }
+
+    @Test
+    void getAllManagers_InternalServerError() {
+        // Arrange
+        when(employeeService.getAllManagers()).thenThrow(new RuntimeException("Database error"));
+
+        // Act & Assert
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
+            managerService.getAllManagers();
+        });
+
+        assertEquals("Internal Server Error", thrown.getMessage());
+        verify(employeeService).getAllManagers();
+       
     }
     
     @Test
@@ -354,4 +382,57 @@ public class ManagerServiceIMPLTest {
         verify(userRepository, times(1)).findByUserEmail("manager@example.com");
     }
 
+    
+    @Test
+    void changePassword_SuccessfulChange() {
+        // Arrange
+        Principal principal = () -> "user@example.com";
+        String newPassword = "newPassword";
+        User mockUser = new User();
+        mockUser.setUserEmail("user@example.com");
+        mockUser.setUserPassword("encodedPassword");
+
+        when(employeeService.changePassword(principal, newPassword)).thenReturn(mockUser);
+
+        // Act
+        User result = managerService.changePassword(principal, newPassword);
+
+        // Assert
+        assertEquals("encodedPassword", result.getUserPassword());
+        verify(employeeService).changePassword(principal, newPassword);
+    }
+
+    @Test
+    void changePassword_UserNotFound() {
+        // Arrange
+        Principal principal = () -> "user@example.com";
+        String newPassword = "newPassword";
+
+        when(employeeService.changePassword(principal, newPassword)).thenThrow(new ResourceNotFoundException("User not found"));
+
+        // Act & Assert
+        ResourceNotFoundException thrown = assertThrows(ResourceNotFoundException.class, () -> {
+            managerService.changePassword(principal, newPassword);
+        });
+
+        assertEquals("User not found", thrown.getMessage());
+        verify(employeeService).changePassword(principal, newPassword);
+    }
+
+    @Test
+    void changePassword_InternalAuthenticationServiceException() {
+        // Arrange
+        Principal principal = () -> "user@example.com";
+        String newPassword = "newPassword";
+
+        when(employeeService.changePassword(principal, newPassword)).thenThrow(new InternalAuthenticationServiceException("Error occurred in changing password"));
+
+        // Act & Assert
+        InternalAuthenticationServiceException thrown = assertThrows(InternalAuthenticationServiceException.class, () -> {
+            managerService.changePassword(principal, newPassword);
+        });
+
+        assertEquals("Error occurred in changing password", thrown.getMessage());
+        verify(employeeService).changePassword(principal, newPassword);
+    }
 }

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     showHomePage();
 });
-var token = localStorage.getItem("authToken");
+var token = localStorage.getItem("employeeAuthToken");
 const headers = new Headers();
 headers.set('Authorization', 'Basic ' + token);
 headers.set('Content-Type', 'application/json');
@@ -279,7 +279,7 @@ window.onclick = function(event) {
 
 
 function logout() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('employeeAuthToken');
     window.location.href = '../login/login.html';
 }
 
